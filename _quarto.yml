@@ -1,0 +1,12 @@
+project:
+  type: website
+  output-dir: docs
+  resources:
+    - data/
+
+website:
+  title: "GUARDIAS Indicators Dashboard"
+
+format:
+  html:
+    theme: darkly
