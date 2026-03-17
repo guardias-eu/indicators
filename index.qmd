@@ -88,18 +88,22 @@ lme_layer = L.layerGroup().addTo(map)
 ```
 
 ```{ojs}
-// Build the raw-GitHub URL for a pre-generated indicator PNG.
-// Filename pattern used by emtrends: lme_{lme_name}_species_{species_key}.png
-// encodeURIComponent encodes spaces and special characters (e.g. space → %20).
-const PLOTS_BASE_URL =
+// Base URL for pre-generated indicator PNGs (guardias-eu/emtrends).
+// Filename pattern: lme_{lme_name}_species_{species_key}.png
+PLOTS_BASE_URL =
   "https://raw.githubusercontent.com/guardias-eu/emtrends/main/" +
-  "data/output/indicators_plots/indicators_plots_png/";
+  "data/output/indicators_plots/indicators_plots_png/"
+```
 
+```{ojs}
+// Build the full PNG URL; encodeURIComponent handles spaces in LME names.
 function plotUrl(lme_name, species_key) {
   const filename = `lme_${lme_name}_species_${species_key}.png`;
   return PLOTS_BASE_URL + encodeURIComponent(filename);
 }
+```
 
+```{ojs}
 // Create popup content showing the indicator PNG.
 // Falls back to a "no plot available" message when the image cannot be loaded.
 function createPopupContent(lme_name, species_name, species_key) {
