@@ -1,0 +1,204 @@
+---
+title: "GUARDIAS Marine Species Indicators"
+format:
+  html:
+    page-layout: full
+    theme: darkly
+---
+
+```{ojs}
+// Load required libraries
+d3 = require("d3@7")
+L = require("leaflet@1.9.4")
+
+// Add Leaflet CSS
+html`<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />`
+```
+
+```{ojs}
+// Load data files
+species_data = d3.csv("data/species_lme_combinations.csv")
+lme_geojson  = d3.json("data/lme_polygons.geojson")
+```
+
+```{ojs}
+// Get unique species names for the autocomplete dropdown
+unique_species = [...new Set(species_data.map(d => d.species_name))].sort()
+```
+
+## Species Dashboard
+
+::: {.grid}
+
+::: {.g-col-4}
+### Select Species
+
+```{ojs}
+viewof selected_species = Inputs.text({
+  label: "Species:",
+  placeholder: "Type to search species...",
+  value: unique_species[0],
+  datalist: unique_species
+})
+```
+
+### Filtered LME Regions
+
+```{ojs}
+// Validate that the selected species exists in the list
+validated_species = unique_species.includes(selected_species)
+  ? selected_species
+  : unique_species[0]
+```
+
+```{ojs}
+// Rows for the validated species, one per LME
+filtered_rows      = species_data.filter(d => d.species_name === validated_species)
+filtered_lme_ids   = filtered_rows.map(d => +d.lme_id)
+```
+
+Showing **${filtered_lme_ids.length}** LME region(s) for **${validated_species}**
+
+:::
+
+::: {.g-col-8}
+### Map – Click on a highlighted region to view the indicator plot
+
+```{ojs}
+// Create map container
+map_container = html`<div id="map" style="height: 500px; width: 100%;"></div>`
+```
+
+```{ojs}
+// Initialise Leaflet map centred on European seas
+map = {
+  const m = L.map(map_container).setView([55.0, 15.0], 4);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap contributors"
+  }).addTo(m);
+
+  return m;
+}
+```
+
+```{ojs}
+// Layer group that holds the LME polygons (cleared and rebuilt reactively)
+lme_layer = L.layerGroup().addTo(map)
+```
+
+```{ojs}
+// Build the raw-GitHub URL for a pre-generated indicator PNG.
+// Filename pattern used by emtrends: lme_{lme_name}_species_{species_key}.png
+// encodeURIComponent encodes spaces and special characters (e.g. space → %20).
+const PLOTS_BASE_URL =
+  "https://raw.githubusercontent.com/guardias-eu/emtrends/main/" +
+  "data/output/indicators_plots/indicators_plots_png/";
+
+function plotUrl(lme_name, species_key) {
+  const filename = `lme_${lme_name}_species_${species_key}.png`;
+  return PLOTS_BASE_URL + encodeURIComponent(filename);
+}
+
+// Create popup content showing the indicator PNG.
+// Falls back to a "no plot available" message when the image cannot be loaded.
+function createPopupContent(lme_name, species_name, species_key) {
+  const container = document.createElement("div");
+  container.style.minWidth = "320px";
+
+  const title = Object.assign(document.createElement("h4"), {
+    textContent: `${species_name} – ${lme_name}`
+  });
+  title.style.marginTop = "0";
+  container.appendChild(title);
+
+  const img = document.createElement("img");
+  img.src = plotUrl(lme_name, species_key);
+  img.alt = `Indicator plot for ${species_name} in ${lme_name}`;
+  img.style.cssText = "max-width:300px; height:auto; display:block;";
+  img.onerror = () => {
+    img.replaceWith(Object.assign(document.createElement("p"), {
+      textContent: "No plot available for this selection."
+    }));
+  };
+  container.appendChild(img);
+
+  return container;
+}
+```
+
+```{ojs}
+// Reactive cell: rebuild LME polygons whenever the selected species changes
+{
+  lme_layer.clearLayers();
+
+  lme_geojson.features.forEach(feature => {
+    const lme_id   = feature.properties.lme_id;
+    const lme_name = feature.properties.lme_name;
+
+    // Records for this LME (all species present here)
+    const lme_records  = species_data.filter(d => +d.lme_id === lme_id);
+    const all_species  = lme_records.map(d => d.species_name);
+    const is_filtered  = filtered_lme_ids.includes(lme_id);
+
+    const style = {
+      fillColor:   is_filtered ? "#3388ff" : "#cccccc",
+      weight:      2,
+      opacity:     1,
+      color:       is_filtered ? "#0066cc" : "#999999",
+      fillOpacity: is_filtered ? 0.6 : 0.3
+    };
+
+    const layer = L.geoJSON(feature, {
+      style,
+      onEachFeature: (feat, lyr) => {
+        // Tooltip: show the first 5 species present in this LME (with count)
+        const TOOLTIP_MAX = 5;
+        const shown   = all_species.slice(0, TOOLTIP_MAX).join(", ");
+        const extra   = all_species.length > TOOLTIP_MAX
+          ? ` … (+${all_species.length - TOOLTIP_MAX} more)`
+          : "";
+        const tooltip_text = all_species.length > 0
+          ? `${lme_name}: ${shown}${extra} (${all_species.length} species)`
+          : `${lme_name}: No species data`;
+        lyr.bindTooltip(tooltip_text, { permanent: false, direction: "center" });
+
+        // Click: open popup with the indicator PNG for the selected species
+        if (is_filtered) {
+          const row = filtered_rows.find(d => +d.lme_id === lme_id);
+          lyr.on("click", () => {
+            L.popup()
+              .setLatLng(lyr.getBounds().getCenter())
+              .setContent(createPopupContent(lme_name, validated_species, row.species_key))
+              .openOn(map);
+          });
+
+          lyr.on("mouseover", () => lyr.setStyle({ fillOpacity: 0.8 }));
+          lyr.on("mouseout",  () => lyr.setStyle({ fillOpacity: 0.6 }));
+        }
+      }
+    });
+
+    layer.addTo(lme_layer);
+  });
+
+  // Zoom to highlighted regions when any are selected
+  if (filtered_lme_ids.length > 0) {
+    const bounds = lme_layer.getBounds();
+    if (bounds.isValid()) map.fitBounds(bounds, { padding: [50, 50] });
+  }
+}
+```
+
+:::
+
+:::
+
+---
+
+**Instructions:**
+
+1. Type a species name in the text input on the left (autocomplete suggestions will appear).
+2. The map highlights LME regions containing that species in blue.
+3. Hover over any region to see all species it contains.
+4. Click on a highlighted region to view the indicator plot in a popup.

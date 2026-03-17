@@ -1,0 +1,10 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "GUARDIAS Indicators Dashboard"
+
+format:
+  html:
+    theme: darkly
