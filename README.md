@@ -48,3 +48,6 @@ quarto render
 
 The rendered site is written to `docs/` and can be served by any static host
 (e.g. GitHub Pages).
+
+## Funding
+This package is being developed in the framework of the GuardIAS prject. GuardIAS receives funding from the European Union’s Horizon Europe Research and Innovation Programme (ID No 101181413).
