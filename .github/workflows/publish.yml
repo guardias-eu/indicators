@@ -5,6 +5,10 @@ on:
 
 name: Quarto Publish
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
