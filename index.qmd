@@ -88,11 +88,9 @@ lme_layer = L.layerGroup().addTo(map)
 ```
 
 ```{ojs}
-// Base URL for pre-generated indicator PNGs (guardias-eu/emtrends).
+// Base URL for pre-generated indicator PNGs (stored locally).
 // Filename pattern: lme_{lme_name}_species_{species_key}.png
-PLOTS_BASE_URL =
-  "https://raw.githubusercontent.com/guardias-eu/emtrends/main/" +
-  "data/output/indicators_plots/indicators_plots_png/"
+PLOTS_BASE_URL = "data/indicators_plots_png/"
 ```
 
 ```{ojs}
