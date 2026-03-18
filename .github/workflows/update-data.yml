@@ -1,4 +1,4 @@
-name: Update Data from EMTrends
+name: Update Data from emtrends
 
 on:
   schedule:
