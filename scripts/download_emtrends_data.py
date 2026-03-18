@@ -7,6 +7,9 @@ Downloads:
 These files are updated weekly in the emtrends repository and need to be
 synced to this repository for local access.
 
+The script always re-downloads all files to ensure they are up-to-date,
+removing any existing files first.
+
 Run from the repository root::
 
     pip install requests
@@ -15,6 +18,7 @@ Run from the repository root::
 
 import csv
 import os
+import shutil
 import sys
 import time
 from pathlib import Path
@@ -64,10 +68,19 @@ def build_png_filename(lme_name: str, species_key: str) -> str:
 
 
 def download_png_files() -> None:
-    """Download all PNG files based on species_lme_combinations.csv."""
+    """Download all PNG files based on species_lme_combinations.csv.
+    
+    Always re-downloads all files to ensure they are up-to-date.
+    Clears the existing PNG directory first to remove any obsolete files.
+    """
     print("\n=== Downloading PNG files ===")
     
-    # Create the plots directory if it doesn't exist
+    # Clean the plots directory to ensure we get fresh files
+    if PLOTS_DIR.exists():
+        print(f"Cleaning existing PNG directory: {PLOTS_DIR}")
+        shutil.rmtree(PLOTS_DIR)
+    
+    # Create the plots directory
     PLOTS_DIR.mkdir(parents=True, exist_ok=True)
     
     # Read the species-LME combinations
@@ -76,10 +89,10 @@ def download_png_files() -> None:
         rows = list(reader)
     
     print(f"Found {len(rows)} species-LME combinations")
+    print(f"Downloading all {len(rows)} PNG files (this may take a while)...")
     
     # Track download statistics
     downloaded = 0
-    skipped = 0
     failed = 0
     
     # Download each PNG file
@@ -94,15 +107,7 @@ def download_png_files() -> None:
         from urllib.parse import quote
         url = f"{PLOTS_BASE_URL}/{quote(filename)}"
         
-        # Skip if file already exists (to save bandwidth)
-        # Note: We could add a force flag or check file timestamps for updates
-        if dest_path.exists():
-            skipped += 1
-            if i % 10 == 0 or i == len(rows):
-                print(f"Progress: {i}/{len(rows)} (downloaded: {downloaded}, skipped: {skipped}, failed: {failed})")
-            continue
-        
-        # Download the file
+        # Always download the file (no skipping)
         success = download_file(url, dest_path, silent=True)
         
         if success:
@@ -112,7 +117,7 @@ def download_png_files() -> None:
         
         # Print progress every 10 files or at the end
         if i % 10 == 0 or i == len(rows):
-            print(f"Progress: {i}/{len(rows)} (downloaded: {downloaded}, skipped: {skipped}, failed: {failed})")
+            print(f"Progress: {i}/{len(rows)} (downloaded: {downloaded}, failed: {failed})")
         
         # Small delay to avoid rate limiting
         if i % 50 == 0:
@@ -120,7 +125,6 @@ def download_png_files() -> None:
     
     print(f"\nPNG download complete:")
     print(f"  Downloaded: {downloaded} files")
-    print(f"  Skipped (already exist): {skipped} files")
     print(f"  Failed: {failed} files")
     
     if failed > 0:
