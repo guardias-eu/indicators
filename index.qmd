@@ -4,7 +4,6 @@ format:
   html:
     page-layout: full
     theme: darkly
-favicon: data/favicon.png
 ---
 
 **Instructions:**
