@@ -70,8 +70,6 @@ filtered_rows      = species_data.filter(d => d.species_name === validated_speci
 filtered_lme_ids   = filtered_rows.map(d => +d.lme_id)
 ```
 
-Showing **${filtered_lme_ids.length}** LME region(s) for **${validated_species}**
-
 :::
 
 ::: {.g-col-8}
