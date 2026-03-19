@@ -6,7 +6,6 @@ project:
 
 website:
   title: "GUARDIAS Indicators Dashboard"
-  favicon: data/favicon.png
 
 format:
   html:
