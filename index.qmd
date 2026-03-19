@@ -97,8 +97,9 @@ map = {
 
 ```{ojs}
 //| echo: false
-// Layer group that holds the LME polygons (cleared and rebuilt reactively)
-lme_layer = L.layerGroup().addTo(map)
+// Feature group that holds the LME polygons (cleared and rebuilt reactively)
+// Using featureGroup instead of layerGroup to support getBounds()
+lme_layer = L.featureGroup().addTo(map)
 ```
 
 ```{ojs}
