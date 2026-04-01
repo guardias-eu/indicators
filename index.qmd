@@ -53,8 +53,6 @@ viewof selected_species = Inputs.text({
 })
 ```
 
-### Filtered LME Regions
-
 ```{ojs}
 //| echo: false
 // Validate that the selected species exists in the list
