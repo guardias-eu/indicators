@@ -6,7 +6,15 @@ format:
     theme: darkly
 ---
 
+**Instructions:**
+
+1. Type a species name in the text input on the left (autocomplete suggestions will appear).
+2. The map highlights LME regions containing that species in blue.
+3. Hover over any region to see all species it contains.
+4. Click on a highlighted region to view the indicator plot in a popup.
+
 ```{ojs}
+//| echo: false
 // Load required libraries
 d3 = require("d3@7")
 L = require("leaflet@1.9.4")
@@ -16,12 +24,14 @@ html`<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.c
 ```
 
 ```{ojs}
+//| echo: false
 // Load data files
 species_data = d3.csv("data/species_lme_combinations.csv")
 lme_geojson  = d3.json("data/lme_polygons.geojson")
 ```
 
 ```{ojs}
+//| echo: false
 // Get unique species names for the autocomplete dropdown
 unique_species = [...new Set(species_data.map(d => d.species_name))].sort()
 ```
@@ -34,6 +44,7 @@ unique_species = [...new Set(species_data.map(d => d.species_name))].sort()
 ### Select Species
 
 ```{ojs}
+//| echo: false
 viewof selected_species = Inputs.text({
   label: "Species:",
   placeholder: "Type to search species...",
@@ -42,9 +53,8 @@ viewof selected_species = Inputs.text({
 })
 ```
 
-### Filtered LME Regions
-
 ```{ojs}
+//| echo: false
 // Validate that the selected species exists in the list
 validated_species = unique_species.includes(selected_species)
   ? selected_species
@@ -52,12 +62,11 @@ validated_species = unique_species.includes(selected_species)
 ```
 
 ```{ojs}
+//| echo: false
 // Rows for the validated species, one per LME
 filtered_rows      = species_data.filter(d => d.species_name === validated_species)
 filtered_lme_ids   = filtered_rows.map(d => +d.lme_id)
 ```
-
-Showing **${filtered_lme_ids.length}** LME region(s) for **${validated_species}**
 
 :::
 
@@ -65,11 +74,13 @@ Showing **${filtered_lme_ids.length}** LME region(s) for **${validated_species}*
 ### Map – Click on a highlighted region to view the indicator plot
 
 ```{ojs}
+//| echo: false
 // Create map container
 map_container = html`<div id="map" style="height: 500px; width: 100%;"></div>`
 ```
 
 ```{ojs}
+//| echo: false
 // Initialise Leaflet map centred on European seas
 map = {
   const m = L.map(map_container).setView([55.0, 15.0], 4);
@@ -83,17 +94,21 @@ map = {
 ```
 
 ```{ojs}
-// Layer group that holds the LME polygons (cleared and rebuilt reactively)
-lme_layer = L.layerGroup().addTo(map)
+//| echo: false
+// Feature group that holds the LME polygons (cleared and rebuilt reactively)
+// Using featureGroup instead of layerGroup to support getBounds()
+lme_layer = L.featureGroup().addTo(map)
 ```
 
 ```{ojs}
+//| echo: false
 // Base URL for pre-generated indicator PNGs (stored locally).
 // Filename pattern: lme_{lme_name}_species_{species_key}.png
 PLOTS_BASE_URL = "data/indicators_plots_png/"
 ```
 
 ```{ojs}
+//| echo: false
 // Build the full PNG URL; encodeURIComponent handles spaces in LME names.
 function plotUrl(lme_name, species_key) {
   const filename = `lme_${lme_name}_species_${species_key}.png`;
@@ -102,6 +117,7 @@ function plotUrl(lme_name, species_key) {
 ```
 
 ```{ojs}
+//| echo: false
 // Create popup content showing the indicator PNG.
 // Falls back to a "no plot available" message when the image cannot be loaded.
 function createPopupContent(lme_name, species_name, species_key) {
@@ -130,8 +146,9 @@ function createPopupContent(lme_name, species_name, species_key) {
 ```
 
 ```{ojs}
+//| echo: false
 // Reactive cell: rebuild LME polygons whenever the selected species changes
-{
+update_map = {
   lme_layer.clearLayers();
 
   lme_geojson.features.forEach(feature => {
@@ -195,12 +212,3 @@ function createPopupContent(lme_name, species_name, species_key) {
 :::
 
 :::
-
----
-
-**Instructions:**
-
-1. Type a species name in the text input on the left (autocomplete suggestions will appear).
-2. The map highlights LME regions containing that species in blue.
-3. Hover over any region to see all species it contains.
-4. Click on a highlighted region to view the indicator plot in a popup.
