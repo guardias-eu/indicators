@@ -148,7 +148,7 @@ function createPopupContent(lme_name, species_name, species_key) {
 ```{ojs}
 //| echo: false
 // Reactive cell: rebuild LME polygons whenever the selected species changes
-{
+update_map = {
   lme_layer.clearLayers();
 
   lme_geojson.features.forEach(feature => {
