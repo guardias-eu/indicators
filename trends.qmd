@@ -217,4 +217,4 @@ reappearing_table = selected_lme_id !== null && filtered_reappearing.length > 0
 
 ---
 
-**Funding:** This dashboard is being developed in the framework of the GuardIAS prject. GuardIAS receives funding from the European Union's Horizon Europe Research and Innovation Programme (ID No 101181413).
+**Funding:** This dashboard is being developed in the framework of the GuardIAS project. GuardIAS receives funding from the European Union's Horizon Europe Research and Innovation Programme (ID No 101181413).
