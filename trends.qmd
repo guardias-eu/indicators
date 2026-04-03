@@ -1,0 +1,220 @@
+---
+title: "Species Trends by LME"
+format:
+  html:
+    page-layout: full
+    theme: darkly
+---
+
+**Instructions:**
+
+1. Click on any LME region on the map to view species trends.
+2. Appearing species and reappearing species will be displayed in tables below the map.
+
+```{ojs}
+//| echo: false
+// Load required libraries
+d3 = require("d3@7")
+L = require("leaflet@1.9.4")
+
+// Add Leaflet CSS
+html`<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />`
+```
+
+```{ojs}
+//| echo: false
+// Load data files
+lme_geojson = d3.json("data/lme_polygons.geojson")
+
+// Load species data from emtrends repository
+appearing_species_data = d3.csv("https://raw.githubusercontent.com/guardias-eu/emtrends/main/data/output/appearing_species.csv")
+reappearing_species_data = d3.csv("https://raw.githubusercontent.com/guardias-eu/emtrends/main/data/output/reappearing_species.csv")
+```
+
+```{ojs}
+//| echo: false
+// Mutable selected LME state
+mutable selected_lme_id = null
+```
+
+## Species Trends Dashboard
+
+::: {.grid}
+
+::: {.g-col-12}
+### Map – Click on a region to view species trends
+
+```{ojs}
+//| echo: false
+// Create map container
+map_container = html`<div id="trends-map" style="height: 500px; width: 100%;"></div>`
+```
+
+```{ojs}
+//| echo: false
+// Initialise Leaflet map centred on European seas
+map = {
+  const m = L.map(map_container).setView([55.0, 15.0], 4);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap contributors"
+  }).addTo(m);
+
+  return m;
+}
+```
+
+```{ojs}
+//| echo: false
+// Feature group that holds the LME polygons
+lme_layer = L.featureGroup().addTo(map)
+```
+
+```{ojs}
+//| echo: false
+// Add LME polygons to the map
+add_lme_polygons = {
+  lme_layer.clearLayers();
+
+  lme_geojson.features.forEach(feature => {
+    const lme_id   = feature.properties.lme_id;
+    const lme_name = feature.properties.lme_name;
+
+    const style = {
+      fillColor:   "#3388ff",
+      weight:      2,
+      opacity:     1,
+      color:       "#0066cc",
+      fillOpacity: selected_lme_id === lme_id ? 0.8 : 0.4
+    };
+
+    const layer = L.geoJSON(feature, {
+      style,
+      onEachFeature: (feat, lyr) => {
+        // Tooltip showing LME name
+        lyr.bindTooltip(lme_name, { permanent: false, direction: "center" });
+
+        // Click handler to select LME
+        lyr.on("click", () => {
+          mutable selected_lme_id = lme_id;
+          // Update styles for all layers
+          lme_layer.eachLayer(l => {
+            const fid = l.feature.properties.lme_id;
+            l.setStyle({
+              fillOpacity: fid === lme_id ? 0.8 : 0.4
+            });
+          });
+        });
+
+        // Hover effects
+        lyr.on("mouseover", () => {
+          if (selected_lme_id !== lme_id) {
+            lyr.setStyle({ fillOpacity: 0.6 });
+          }
+        });
+        lyr.on("mouseout", () => {
+          if (selected_lme_id !== lme_id) {
+            lyr.setStyle({ fillOpacity: 0.4 });
+          }
+        });
+      }
+    });
+
+    layer.addTo(lme_layer);
+  });
+}
+```
+
+:::
+
+:::
+
+```{ojs}
+//| echo: false
+// Filter data based on selected LME
+filtered_appearing = selected_lme_id !== null
+  ? appearing_species_data.filter(d => +d.lme_id === selected_lme_id)
+  : []
+
+filtered_reappearing = selected_lme_id !== null
+  ? reappearing_species_data.filter(d => +d.lme_id === selected_lme_id)
+  : []
+```
+
+```{ojs}
+//| echo: false
+// Get selected LME name
+selected_lme_name = selected_lme_id !== null
+  ? lme_geojson.features.find(f => f.properties.lme_id === selected_lme_id)?.properties.lme_name || "Unknown"
+  : null
+```
+
+::: {.grid}
+
+::: {.g-col-12}
+
+${selected_lme_id !== null ? html`<h3>Appearing Species in ${selected_lme_name}</h3>` : html`<p style="text-align: center; color: #999; padding: 20px;">Click on a region to view species trends</p>`}
+
+```{ojs}
+//| echo: false
+// Display appearing species table
+appearing_table = selected_lme_id !== null && filtered_appearing.length > 0
+  ? Inputs.table(filtered_appearing, {
+      columns: ["species", "first_year"],
+      header: {
+        species: "Species",
+        first_year: "First Year"
+      },
+      width: {
+        species: 400,
+        first_year: 150
+      },
+      sort: "first_year",
+      reverse: true
+    })
+  : selected_lme_id !== null
+    ? html`<p style="text-align: center; color: #999; padding: 20px;">No appearing species data available for this LME</p>`
+    : html``
+```
+
+:::
+
+:::
+
+::: {.grid}
+
+::: {.g-col-12}
+
+${selected_lme_id !== null ? html`<h3>Reappearing Species in ${selected_lme_name}</h3>` : html``}
+
+```{ojs}
+//| echo: false
+// Display reappearing species table
+reappearing_table = selected_lme_id !== null && filtered_reappearing.length > 0
+  ? Inputs.table(filtered_reappearing, {
+      columns: ["species", "reappearance_year", "years_without_occurrences"],
+      header: {
+        species: "Species",
+        reappearance_year: "Reappearance Year",
+        years_without_occurrences: "Years Without Occurrences"
+      },
+      width: {
+        species: 300,
+        reappearance_year: 150,
+        years_without_occurrences: 200
+      },
+      sort: "reappearance_year",
+      reverse: true
+    })
+  : selected_lme_id !== null
+    ? html`<p style="text-align: center; color: #999; padding: 20px;">No reappearing species data available for this LME</p>`
+    : html``
+```
+
+:::
+
+:::
+
+---
+
+**Funding:** This dashboard is being developed in the framework of the GuardIAS prject. GuardIAS receives funding from the European Union's Horizon Europe Research and Innovation Programme (ID No 101181413).

@@ -7,6 +7,12 @@ project:
 website:
   title: "GUARDIAS Indicators Dashboard"
   favicon: favicon.ico
+  navbar:
+    left:
+      - text: "Species Indicators"
+        href: index.qmd
+      - text: "Species Trends"
+        href: trends.qmd
 
 format:
   html:
