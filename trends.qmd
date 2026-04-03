@@ -157,7 +157,10 @@ selected_lme_name = selected_lme_id !== null
 
 ### Appearing Species
 
-${selected_lme_id !== null ? html`<h4 style="margin-top: 0;">${selected_lme_name}</h4>` : html`<p style="text-align: center; color: #999; padding: 20px;">Click on a region to view species trends</p>`}
+```{ojs}
+//| echo: false
+selected_lme_id !== null ? html`<h4 style="margin-top: 0;">${selected_lme_name}</h4>` : html`<p style="text-align: center; color: #999; padding: 20px;">Click on a region to view species trends</p>`
+```
 
 ```{ojs}
 //| echo: false
@@ -193,7 +196,10 @@ appearing_table = selected_lme_id !== null && filtered_appearing.length > 0
 
 ### Reappearing Species
 
-${selected_lme_id !== null ? html`<h4 style="margin-top: 0;">${selected_lme_name}</h4>` : html``}
+```{ojs}
+//| echo: false
+selected_lme_id !== null ? html`<h4 style="margin-top: 0;">${selected_lme_name}</h4>` : html``
+```
 
 ```{ojs}
 //| echo: false
