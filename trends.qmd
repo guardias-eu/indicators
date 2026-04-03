@@ -22,25 +22,42 @@ html`<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.c
 
 // Add custom CSS for table borders
 html`<style>
-  /* Add borders to Observable tables */
-  .observablehq table {
-    border-collapse: collapse;
-    border: 1px solid #444;
+  /* Add borders to Observable tables - multiple selectors to ensure coverage */
+  table {
+    border-collapse: collapse !important;
+    border: 1px solid #555 !important;
+    width: 100%;
   }
   
-  .observablehq table th,
-  .observablehq table td {
-    border: 1px solid #444;
-    padding: 8px;
+  th,
+  td {
+    border: 1px solid #555 !important;
+    padding: 8px !important;
+    text-align: left;
   }
   
-  .observablehq table th {
-    background-color: #2d3748;
-    font-weight: bold;
+  th {
+    background-color: #2d3748 !important;
+    font-weight: bold !important;
   }
   
-  .observablehq table tr:hover {
-    background-color: #374151;
+  tr:hover {
+    background-color: #374151 !important;
+  }
+  
+  /* Also target with Observable-specific selectors */
+  .observablehq table,
+  .observablehq--inspect table {
+    border-collapse: collapse !important;
+    border: 1px solid #555 !important;
+  }
+  
+  .observablehq th,
+  .observablehq td,
+  .observablehq--inspect th,
+  .observablehq--inspect td {
+    border: 1px solid #555 !important;
+    padding: 8px !important;
   }
 </style>`
 ```
