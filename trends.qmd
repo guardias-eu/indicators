@@ -19,6 +19,30 @@ L = require("leaflet@1.9.4")
 
 // Add Leaflet CSS
 html`<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />`
+
+// Add custom CSS for table borders
+html`<style>
+  /* Add borders to Observable tables */
+  .observablehq table {
+    border-collapse: collapse;
+    border: 1px solid #444;
+  }
+  
+  .observablehq table th,
+  .observablehq table td {
+    border: 1px solid #444;
+    padding: 8px;
+  }
+  
+  .observablehq table th {
+    background-color: #2d3748;
+    font-weight: bold;
+  }
+  
+  .observablehq table tr:hover {
+    background-color: #374151;
+  }
+</style>`
 ```
 
 ```{ojs}
