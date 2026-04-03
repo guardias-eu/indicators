@@ -81,11 +81,11 @@ add_lme_polygons = {
     const lme_name = feature.properties.lme_name;
 
     const style = {
-      fillColor:   "#3388ff",
+      fillColor:   selected_lme_id === lme_id ? "#3388ff" : "#cccccc",
       weight:      2,
       opacity:     1,
-      color:       "#0066cc",
-      fillOpacity: selected_lme_id === lme_id ? 0.8 : 0.4
+      color:       selected_lme_id === lme_id ? "#0066cc" : "#999999",
+      fillOpacity: selected_lme_id === lme_id ? 0.8 : 0.3
     };
 
     const layer = L.geoJSON(feature, {
@@ -101,7 +101,9 @@ add_lme_polygons = {
           lme_layer.eachLayer(l => {
             const fid = l.feature.properties.lme_id;
             l.setStyle({
-              fillOpacity: fid === lme_id ? 0.8 : 0.4
+              fillColor:   fid === lme_id ? "#3388ff" : "#cccccc",
+              color:       fid === lme_id ? "#0066cc" : "#999999",
+              fillOpacity: fid === lme_id ? 0.8 : 0.3
             });
           });
         });
@@ -109,12 +111,12 @@ add_lme_polygons = {
         // Hover effects
         lyr.on("mouseover", () => {
           if (selected_lme_id !== lme_id) {
-            lyr.setStyle({ fillOpacity: 0.6 });
+            lyr.setStyle({ fillOpacity: 0.5 });
           }
         });
         lyr.on("mouseout", () => {
           if (selected_lme_id !== lme_id) {
-            lyr.setStyle({ fillOpacity: 0.4 });
+            lyr.setStyle({ fillOpacity: 0.3 });
           }
         });
       }
@@ -153,20 +155,24 @@ selected_lme_name = selected_lme_id !== null
 
 ::: {.g-col-12}
 
-${selected_lme_id !== null ? html`<h3>Appearing Species in ${selected_lme_name}</h3>` : html`<p style="text-align: center; color: #999; padding: 20px;">Click on a region to view species trends</p>`}
+### Appearing Species
+
+${selected_lme_id !== null ? html`<h4 style="margin-top: 0;">${selected_lme_name}</h4>` : html`<p style="text-align: center; color: #999; padding: 20px;">Click on a region to view species trends</p>`}
 
 ```{ojs}
 //| echo: false
 // Display appearing species table
 appearing_table = selected_lme_id !== null && filtered_appearing.length > 0
   ? Inputs.table(filtered_appearing, {
-      columns: ["species", "first_year"],
+      columns: ["specieskey", "species", "first_year"],
       header: {
+        specieskey: "Species Key",
         species: "Species",
         first_year: "First Year"
       },
       width: {
-        species: 400,
+        specieskey: 150,
+        species: 350,
         first_year: 150
       },
       sort: "first_year",
@@ -185,21 +191,25 @@ appearing_table = selected_lme_id !== null && filtered_appearing.length > 0
 
 ::: {.g-col-12}
 
-${selected_lme_id !== null ? html`<h3>Reappearing Species in ${selected_lme_name}</h3>` : html``}
+### Reappearing Species
+
+${selected_lme_id !== null ? html`<h4 style="margin-top: 0;">${selected_lme_name}</h4>` : html``}
 
 ```{ojs}
 //| echo: false
 // Display reappearing species table
 reappearing_table = selected_lme_id !== null && filtered_reappearing.length > 0
   ? Inputs.table(filtered_reappearing, {
-      columns: ["species", "reappearance_year", "years_without_occurrences"],
+      columns: ["specieskey", "species", "reappearance_year", "years_without_occurrences"],
       header: {
+        specieskey: "Species Key",
         species: "Species",
         reappearance_year: "Reappearance Year",
         years_without_occurrences: "Years Without Occurrences"
       },
       width: {
-        species: 300,
+        specieskey: 150,
+        species: 250,
         reappearance_year: 150,
         years_without_occurrences: 200
       },
