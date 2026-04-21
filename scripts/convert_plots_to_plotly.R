@@ -49,8 +49,8 @@ cat("JSON directory:", json_dir, "\n\n")
 #' @return TRUE if successful, FALSE otherwise
 convert_ggplot_to_plotly_json <- function(ggplot_obj, output_file) {
   tryCatch({
-    # Convert ggplot to plotly
-    plotly_obj <- ggplotly(ggplot_obj, tooltip = "all")
+    # Convert ggplot to plotly with focused tooltips
+    plotly_obj <- ggplotly(ggplot_obj, tooltip = c("x", "y", "text"))
     
     # Configure plotly layout for better popup display
     plotly_obj <- plotly_obj %>%
