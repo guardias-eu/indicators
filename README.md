@@ -19,17 +19,17 @@ species across Large Marine Ecosystem (LME) regions.
 |------|--------|------------------|
 | `data/lme_polygons.geojson` | Derived from [`lme_eu.gpkg`](https://github.com/guardias-eu/build-eu-cube/blob/main/data/output/lme_eu.gpkg) (guardias-eu/build-eu-cube), simplified at 0.1° tolerance | Manual (via `scripts/prepare_data.py`) |
 | `data/species_lme_combinations.csv` | [`species_lme_combinations.csv`](https://github.com/guardias-eu/emtrends/blob/main/data/output/species_lme_combinations.csv) (guardias-eu/emtrends) | Weekly (via GitHub Actions) |
-| `data/indicators_plots_rds/` | RDS files extracted from ZIP archives in [`indicators_plots/`](https://github.com/guardias-eu/emtrends/tree/main/data/output/indicators_plots) (guardias-eu/emtrends) | Weekly (via GitHub Actions) |
-| `data/indicators_plots_json/` | Plotly JSON files converted from ggplot2 objects in RDS files | Weekly (via GitHub Actions) |
+| `data/indicators_plots_rdata/` | RData files extracted from ZIP archives in [`indicators_plots/`](https://github.com/guardias-eu/emtrends/tree/main/data/output/indicators_plots) (guardias-eu/emtrends) | Weekly (via GitHub Actions) |
+| `data/indicators_plots_json/` | Plotly JSON files converted from ggplot2 objects in RData files | Weekly (via GitHub Actions) |
 
 ### Data flow
 
 The indicator plots follow this processing pipeline:
 
-1. **Source**: ggplot2 objects stored in ZIP archives in the [emtrends repository](https://github.com/guardias-eu/emtrends/tree/main/data/output/indicators_plots)
-2. **Download**: Python script downloads ZIP files and extracts `.rds` files
-3. **Convert**: R script reads `.rds` files, converts ggplot2 to Plotly, and exports as JSON
-4. **Display**: Observable JavaScript loads JSON and renders interactive charts
+1. **Source**: ggplot2 objects stored in RData files within ZIP archives in the [emtrends repository](https://github.com/guardias-eu/emtrends/tree/main/data/output/indicators_plots)
+2. **Download**: Python script downloads ZIP files and extracts `.RData` files (ZIP files are split into chunks per LME)
+3. **Convert**: R script loads `.RData` files, converts ggplot2 objects to Plotly, and exports as JSON
+4. **Display**: Observable JavaScript loads JSON files and renders interactive charts in Leaflet popups
 
 ### Automated data updates
 
@@ -50,7 +50,7 @@ pip install geopandas
 python scripts/prepare_data.py
 
 # For indicator plots and species CSV (automated weekly via GitHub Actions)
-# Step 1: Download ZIP files and extract RDS files
+# Step 1: Download ZIP files and extract RData files
 pip install requests
 python scripts/download_emtrends_data.py
 
