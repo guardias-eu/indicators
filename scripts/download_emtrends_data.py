@@ -70,8 +70,11 @@ def build_zip_filename(lme_name: str, chunk: int) -> str:
     return f"indicators_plots_ggplot2_{lme_name}_chunk_{chunk}.zip"
 
 
-def build_rdata_filename(lme_name: str, species_key: str) -> str:
-    """Build the expected RData object name from LME name and species key."""
+def build_object_name(lme_name: str, species_key: str) -> str:
+    """Build the expected object name from LME name and species key.
+    
+    Object names in RData files follow the pattern: lme_{lme_name}_species_{species_key}
+    """
     return f"lme_{lme_name}_species_{species_key}"
 
 

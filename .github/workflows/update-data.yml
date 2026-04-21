@@ -35,7 +35,7 @@ jobs:
         run: |
           pip install requests
 
-      - name: Download ZIP files and extract RDS files
+      - name: Download ZIP files and extract RData files
         run: |
           python scripts/download_emtrends_data.py
 
