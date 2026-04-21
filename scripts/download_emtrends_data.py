@@ -38,7 +38,7 @@ PLOTS_BASE_URL = f"{EMTRENDS_BASE_URL}/data/output/indicators_plots"
 # ---------------------------------------------------------------------------
 REPO_ROOT = Path(__file__).parent.parent
 DATA_DIR = REPO_ROOT / "data"
-RDS_DIR = DATA_DIR / "indicators_plots_rds"
+RDATA_DIR = DATA_DIR / "indicators_plots_rdata"
 SPECIES_CSV_OUT = DATA_DIR / "species_lme_combinations.csv"
 TEMP_DIR = DATA_DIR / "temp_downloads"
 
@@ -64,32 +64,32 @@ def download_file(url: str, dest: Path, silent: bool = False) -> bool:
         return False
 
 
-def build_zip_filename(lme_name: str) -> str:
-    """Build the ZIP filename from LME name."""
-    # ZIP files are named like: lme_Baltic Sea_indicators_plots.zip
-    return f"lme_{lme_name}_indicators_plots.zip"
+def build_zip_filename(lme_name: str, chunk: int) -> str:
+    """Build the ZIP filename from LME name and chunk number."""
+    # ZIP files are named like: indicators_plots_ggplot2_Baltic Sea_chunk_1.zip
+    return f"indicators_plots_ggplot2_{lme_name}_chunk_{chunk}.zip"
 
 
-def build_rds_filename(lme_name: str, species_key: str) -> str:
-    """Build the RDS filename from LME name and species key."""
-    return f"lme_{lme_name}_species_{species_key}.rds"
+def build_rdata_filename(lme_name: str, species_key: str) -> str:
+    """Build the expected RData object name from LME name and species key."""
+    return f"lme_{lme_name}_species_{species_key}"
 
 
-def download_and_extract_rds_files() -> None:
-    """Download ZIP files and extract RDS files for all species-LME combinations.
+def download_and_extract_rdata_files() -> None:
+    """Download ZIP files and extract RData files for all species-LME combinations.
     
-    ZIP files are organized by LME in the emtrends repository.
-    Each ZIP contains multiple .rds files (one per species in that LME).
+    ZIP files are organized by LME in the emtrends repository and split into chunks.
+    Each ZIP contains an .RData file with multiple ggplot2 objects.
     """
-    print("\n=== Downloading and extracting RDS files ===")
+    print("\n=== Downloading and extracting RData files ===")
     
-    # Clean the RDS directory to ensure we get fresh files
-    if RDS_DIR.exists():
-        print(f"Cleaning existing RDS directory: {RDS_DIR}")
-        shutil.rmtree(RDS_DIR)
+    # Clean the RData directory to ensure we get fresh files
+    if RDATA_DIR.exists():
+        print(f"Cleaning existing RData directory: {RDATA_DIR}")
+        shutil.rmtree(RDATA_DIR)
     
     # Create directories
-    RDS_DIR.mkdir(parents=True, exist_ok=True)
+    RDATA_DIR.mkdir(parents=True, exist_ok=True)
     TEMP_DIR.mkdir(parents=True, exist_ok=True)
     
     # Read the species-LME combinations to know which files we need
@@ -111,59 +111,75 @@ def download_and_extract_rds_files() -> None:
     # Track statistics
     downloaded_zips = 0
     failed_zips = 0
-    extracted_rds = 0
+    extracted_rdata = 0
     
-    # Download and extract each LME's ZIP file
+    # Download and extract each LME's ZIP files
     for i, (lme_name, species_keys) in enumerate(lme_species.items(), 1):
-        zip_filename = build_zip_filename(lme_name)
-        zip_path = TEMP_DIR / zip_filename
-        
-        # Build the URL - encode spaces and special characters
-        from urllib.parse import quote
-        url = f"{PLOTS_BASE_URL}/{quote(zip_filename)}"
-        
         print(f"\n[{i}/{len(lme_species)}] Processing {lme_name} ({len(species_keys)} species)")
         
-        # Download the ZIP file
-        if not download_file(url, zip_path, silent=False):
-            print(f"  ⚠ Failed to download ZIP for {lme_name}")
-            failed_zips += 1
-            continue
+        # Try to download multiple chunks for this LME
+        # We don't know how many chunks exist, so try until we get a 404
+        chunk = 1
+        lme_downloaded = 0
         
-        downloaded_zips += 1
-        
-        # Extract RDS files from the ZIP
-        try:
-            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                # List all files in the ZIP
-                zip_contents = zip_ref.namelist()
-                rds_files = [f for f in zip_contents if f.endswith('.rds')]
-                
-                print(f"  → Found {len(rds_files)} RDS files in ZIP")
-                
-                # Extract each RDS file
-                for rds_file in rds_files:
-                    # Extract to RDS directory
-                    zip_ref.extract(rds_file, TEMP_DIR)
+        while True:
+            zip_filename = build_zip_filename(lme_name, chunk)
+            zip_path = TEMP_DIR / zip_filename
+            
+            # Build the URL - encode spaces and special characters
+            from urllib.parse import quote
+            url = f"{PLOTS_BASE_URL}/{quote(zip_filename)}"
+            
+            # Try to download this chunk
+            if not download_file(url, zip_path, silent=True):
+                # If chunk 1 fails, warn; otherwise we've just run out of chunks
+                if chunk == 1:
+                    print(f"  ⚠ No ZIP files found for {lme_name}")
+                    failed_zips += 1
+                break
+            
+            lme_downloaded += 1
+            downloaded_zips += 1
+            print(f"  → Downloaded chunk {chunk}")
+            
+            # Extract RData files from the ZIP
+            try:
+                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                    # List all files in the ZIP
+                    zip_contents = zip_ref.namelist()
+                    rdata_files = [f for f in zip_contents if f.endswith('.RData')]
                     
-                    # Move to final location (ZIP might have subdirectories)
-                    source = TEMP_DIR / rds_file
-                    dest = RDS_DIR / os.path.basename(rds_file)
+                    print(f"     Found {len(rdata_files)} RData file(s) in chunk {chunk}")
                     
-                    if source.exists():
-                        shutil.move(str(source), str(dest))
-                        extracted_rds += 1
+                    # Extract each RData file
+                    for rdata_file in rdata_files:
+                        # Extract to TEMP_DIR
+                        zip_ref.extract(rdata_file, TEMP_DIR)
+                        
+                        # Move to final location (ZIP might have subdirectories)
+                        source = TEMP_DIR / rdata_file
+                        dest = RDATA_DIR / os.path.basename(rdata_file)
+                        
+                        if source.exists():
+                            shutil.move(str(source), str(dest))
+                            extracted_rdata += 1
                 
-        except zipfile.BadZipFile as e:
-            print(f"  ⚠ Bad ZIP file for {lme_name}: {e}", file=sys.stderr)
-            failed_zips += 1
-        except Exception as e:
-            print(f"  ⚠ Error extracting ZIP for {lme_name}: {e}", file=sys.stderr)
-            failed_zips += 1
+            except zipfile.BadZipFile as e:
+                print(f"  ⚠ Bad ZIP file for {lme_name} chunk {chunk}: {e}", file=sys.stderr)
+                failed_zips += 1
+            except Exception as e:
+                print(f"  ⚠ Error extracting ZIP for {lme_name} chunk {chunk}: {e}", file=sys.stderr)
+                failed_zips += 1
+            
+            # Clean up the ZIP file
+            if zip_path.exists():
+                zip_path.unlink()
+            
+            # Move to next chunk
+            chunk += 1
         
-        # Clean up the ZIP file
-        if zip_path.exists():
-            zip_path.unlink()
+        if lme_downloaded > 0:
+            print(f"  ✓ Downloaded {lme_downloaded} chunk(s) for {lme_name}")
     
     # Clean up temp directory
     if TEMP_DIR.exists():
@@ -172,7 +188,7 @@ def download_and_extract_rds_files() -> None:
     print(f"\n=== Download and extraction complete ===")
     print(f"  Downloaded ZIPs: {downloaded_zips}")
     print(f"  Failed ZIPs: {failed_zips}")
-    print(f"  Extracted RDS files: {extracted_rds}")
+    print(f"  Extracted RData files: {extracted_rdata}")
     
     if failed_zips > 0:
         print(f"\n⚠ Warning: {failed_zips} ZIP files failed to download/extract.")
@@ -194,8 +210,8 @@ def main() -> None:
     # First, download the CSV file (we need this to know which files to download)
     download_species_csv()
     
-    # Then download and extract RDS files from ZIP archives
-    download_and_extract_rds_files()
+    # Then download and extract RData files from ZIP archives
+    download_and_extract_rdata_files()
     
     print("\n✓ Data download complete!")
 

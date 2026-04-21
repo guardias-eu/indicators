@@ -2,7 +2,7 @@
 
 #' Convert ggplot2 objects to Plotly JSON files
 #'
-#' This script reads .rds files containing ggplot2 objects,
+#' This script reads .RData files containing ggplot2 objects,
 #' converts them to interactive Plotly objects, and exports
 #' them as JSON files that can be loaded by JavaScript.
 #'
@@ -31,11 +31,11 @@ if (length(script_dir) == 0) {
 repo_root <- normalizePath(file.path(script_dir, ".."))
 
 # Directory paths
-rds_dir <- file.path(repo_root, "data", "indicators_plots_rds")
+rdata_dir <- file.path(repo_root, "data", "indicators_plots_rdata")
 json_dir <- file.path(repo_root, "data", "indicators_plots_json")
 
 cat("Repository root:", repo_root, "\n")
-cat("RDS directory:", rds_dir, "\n")
+cat("RData directory:", rdata_dir, "\n")
 cat("JSON directory:", json_dir, "\n\n")
 
 # ---------------------------------------------------------------------------
@@ -80,10 +80,10 @@ convert_ggplot_to_plotly_json <- function(ggplot_obj, output_file) {
 
 cat("=== Converting ggplot2 objects to Plotly JSON ===\n\n")
 
-# Check if RDS directory exists
-if (!dir.exists(rds_dir)) {
-  stop("RDS directory not found: ", rds_dir, "\n",
-       "Please run download_emtrends_data.py first to download the RDS files.")
+# Check if RData directory exists
+if (!dir.exists(rdata_dir)) {
+  stop("RData directory not found: ", rdata_dir, "\n",
+       "Please run download_emtrends_data.py first to download the RData files.")
 }
 
 # Create JSON output directory
@@ -93,65 +93,84 @@ if (dir.exists(json_dir)) {
 }
 dir.create(json_dir, recursive = TRUE, showWarnings = FALSE)
 
-# Get all RDS files
-rds_files <- list.files(rds_dir, pattern = "\\.rds$", full.names = TRUE)
+# Get all RData files
+rdata_files <- list.files(rdata_dir, pattern = "\\.RData$", full.names = TRUE)
 
-if (length(rds_files) == 0) {
-  stop("No RDS files found in: ", rds_dir, "\n",
-       "Please run download_emtrends_data.py first to download the RDS files.")
+if (length(rdata_files) == 0) {
+  stop("No RData files found in: ", rdata_dir, "\n",
+       "Please run download_emtrends_data.py first to download the RData files.")
 }
 
-cat("Found", length(rds_files), "RDS files to convert\n\n")
+cat("Found", length(rdata_files), "RData files to process\n\n")
 
 # Track conversion statistics
 converted <- 0
 failed <- 0
 start_time <- Sys.time()
 
-# Convert each RDS file
-for (i in seq_along(rds_files)) {
-  rds_file <- rds_files[i]
-  rds_basename <- basename(rds_file)
+# Process each RData file
+for (i in seq_along(rdata_files)) {
+  rdata_file <- rdata_files[i]
+  rdata_basename <- basename(rdata_file)
   
-  # Build output filename (replace .rds with .json)
-  json_basename <- sub("\\.rds$", ".json", rds_basename)
-  json_file <- file.path(json_dir, json_basename)
+  # Progress update
+  cat(sprintf("[%d/%d] Processing %s\n", i, length(rdata_files), rdata_basename))
   
-  # Progress update every 10 files or at start/end
-  if (i %% 10 == 1 || i == length(rds_files)) {
-    cat(sprintf("[%d/%d] Converting %s\n", i, length(rds_files), rds_basename))
-  }
+  # Load the RData file into a new environment
+  # This prevents polluting the global environment
+  env <- new.env()
   
-  # Read the ggplot object
   tryCatch({
-    ggplot_obj <- readRDS(rds_file)
+    load(rdata_file, envir = env)
     
-    # Verify it's a ggplot object
-    if (!inherits(ggplot_obj, "gg") && !inherits(ggplot_obj, "ggplot")) {
-      warning("File does not contain a ggplot object: ", rds_basename)
+    # Get all objects in the loaded environment
+    object_names <- ls(envir = env)
+    
+    if (length(object_names) == 0) {
+      warning("No objects found in RData file: ", rdata_basename)
       failed <- failed + 1
       next
     }
     
-    # Convert to Plotly JSON
-    if (convert_ggplot_to_plotly_json(ggplot_obj, json_file)) {
-      converted <- converted + 1
-    } else {
-      failed <- failed + 1
+    cat(sprintf("  Found %d object(s) in RData file\n", length(object_names)))
+    
+    # Process each object
+    for (obj_name in object_names) {
+      obj <- get(obj_name, envir = env)
+      
+      # Check if it's a ggplot object
+      if (!inherits(obj, "gg") && !inherits(obj, "ggplot")) {
+        cat(sprintf("  Skipping non-ggplot object: %s\n", obj_name))
+        next
+      }
+      
+      # Build output filename: obj_name.json
+      json_file <- file.path(json_dir, paste0(obj_name, ".json"))
+      
+      # Convert to Plotly JSON
+      if (convert_ggplot_to_plotly_json(obj, json_file)) {
+        converted <- converted + 1
+      } else {
+        failed <- failed + 1
+      }
     }
     
   }, error = function(e) {
-    warning("Failed to read RDS file ", rds_basename, ": ", conditionMessage(e))
+    warning("Failed to load RData file ", rdata_basename, ": ", conditionMessage(e))
     failed <- failed + 1
   })
   
-  # Progress report every 50 files
-  if (i %% 50 == 0) {
+  # Clean up environment
+  rm(env)
+  gc(verbose = FALSE)
+  
+  # Progress report every 5 files
+  if (i %% 5 == 0 || i == length(rdata_files)) {
     elapsed <- as.numeric(difftime(Sys.time(), start_time, units = "secs"))
     rate <- i / elapsed
-    remaining <- (length(rds_files) - i) / rate
-    cat(sprintf("  Progress: %d/%d (converted: %d, failed: %d, ~%.0fs remaining)\n",
-                i, length(rds_files), converted, failed, remaining))
+    remaining <- (length(rdata_files) - i) / rate
+    cat(sprintf("  Progress: %d/%d RData files (converted: %d plots, failed: %d, ~%.0fs remaining)\n",
+                i, length(rdata_files), converted, failed, remaining))
   }
 }
 
@@ -160,13 +179,12 @@ end_time <- Sys.time()
 elapsed <- as.numeric(difftime(end_time, start_time, units = "secs"))
 
 cat("\n=== Conversion complete ===\n")
-cat(sprintf("  Converted: %d files\n", converted))
-cat(sprintf("  Failed: %d files\n", failed))
+cat(sprintf("  Converted: %d plots\n", converted))
+cat(sprintf("  Failed: %d plots\n", failed))
 cat(sprintf("  Time elapsed: %.1f seconds\n", elapsed))
-cat(sprintf("  Average rate: %.1f files/second\n", length(rds_files) / elapsed))
 
 if (failed > 0) {
-  cat("\n⚠ Warning:", failed, "files failed to convert.\n")
+  cat("\n⚠ Warning:", failed, "plots failed to convert.\n")
   cat("  Check warnings above for details.\n")
 }
 
