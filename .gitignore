@@ -5,3 +5,7 @@
 __pycache__/
 *.pyc
 *.deb
+# Large data files - downloaded by GitHub Actions
+/data/indicators_plots_rdata/
+/data/indicators_plots_json/
+/data/temp_downloads/

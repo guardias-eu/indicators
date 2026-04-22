@@ -21,13 +21,27 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+
+      - name: Install R dependencies
+        run: |
+          install.packages(c('ggplot2', 'plotly', 'jsonlite'), repos='https://cloud.r-project.org')
+        shell: Rscript {0}
+
+      - name: Install Python dependencies
         run: |
           pip install requests
 
-      - name: Download PNG files and CSV
+      - name: Download ZIP files and extract RData files
         run: |
           python scripts/download_emtrends_data.py
+
+      - name: Convert ggplot2 objects to Plotly JSON
+        run: |
+          Rscript scripts/convert_plots_to_plotly.R
 
       - name: Check for changes
         id: check_changes
