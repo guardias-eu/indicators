@@ -32,8 +32,7 @@ unique_species = [...new Set(species_data.map(d => d.species_name))].sort()
 
 ::: {.grid}
 
-::: {.g-col-4}
-### Select Species
+::: {.g-col-6}
 
 ```{ojs}
 //| echo: false
@@ -62,8 +61,7 @@ filtered_lme_ids   = filtered_rows.map(d => +d.lme_id)
 
 :::
 
-::: {.g-col-8}
-### Map – Click on a highlighted region to view the indicator plots
+::: {.g-col-6}
 
 ```{ojs}
 //| echo: false

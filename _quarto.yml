@@ -5,14 +5,15 @@ project:
     - data/
 
 website:
-  title: "GUARDIAS Indicators Dashboard"
+  title: "GuardIAS Emerging Indicators"
   favicon: favicon.ico
   navbar:
     left:
-      - text: "Species Indicators"
-        href: index.qmd
-      - text: "Species Trends"
+      - text: "Emerging Trends"
         href: trends.qmd
+      - text: "Species Plots"
+        href: species_plots.qmd
+      
 
 format:
   html:

@@ -134,7 +134,7 @@ map_container = html`<div id="trends-map" style="height: 350px; width: 100%;"></
 //| echo: false
 // Initialise Leaflet map centred on European seas (same center and zoom as homepage)
 map = {
-  const m = L.map(map_container).setView([55.0, 15.0], 1);
+  const m = L.map(map_container).setView([55.0, 15.0], 2);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors"
