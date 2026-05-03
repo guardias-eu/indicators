@@ -154,6 +154,12 @@ lme_layer = L.featureGroup().addTo(map)
 
 ```{ojs}
 //| echo: false
+// Feature group for the black bounding-box highlight on the selected LME
+highlight_layer = L.featureGroup().addTo(map)
+```
+
+```{ojs}
+//| echo: false
 // Base URL for pre-generated Plotly JSON files.
 PLOTS_JSON_BASE = "data/indicators_plots_json/"
 ```
@@ -248,6 +254,30 @@ update_map = {
   if (filtered_lme_ids.length > 0) {
     const bounds = lme_layer.getBounds();
     if (bounds.isValid()) map.fitBounds(bounds, { padding: [50, 50] });
+  }
+}
+```
+
+```{ojs}
+//| echo: false
+// Reactive cell: draw a black bounding box around the selected LME
+highlight_selected = {
+  highlight_layer.clearLayers();
+
+  if (selected_lme_id !== null) {
+    const feature = lme_geojson.features.find(f => f.properties.lme_id === selected_lme_id);
+    if (feature) {
+      L.geoJSON(feature, {
+        style: {
+          color: "#000000",
+          weight: 4,
+          opacity: 1,
+          fillOpacity: 0,
+          dashArray: null
+        },
+        interactive: false
+      }).addTo(highlight_layer);
+    }
   }
 }
 ```
