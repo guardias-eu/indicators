@@ -36,7 +36,7 @@ reappearing_species_data = d3.csv("https://raw.githubusercontent.com/guardias-eu
 ```{ojs}
 //| echo: false
 // Mutable selected LME state
-mutable selected_lme_id = null
+mutable selected_lme_id = 13
 ```
 
 ```{ojs}
@@ -142,7 +142,7 @@ map_container = html`<div id="trends-map" style="height: 500px; width: 100%;"></
 //| echo: false
 // Initialise Leaflet map centred on European seas (same center and zoom as homepage)
 map = {
-  const m = L.map(map_container).setView([55.0, 15.0], 4);
+  const m = L.map(map_container).setView([55.0, 15.0], 3);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors"
