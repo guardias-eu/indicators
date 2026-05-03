@@ -131,10 +131,10 @@ process_object <- function(obj, prefix, out_dir) {
 #' Appearing files:  appearing_species_plots_ggplot2_lme_{lme_name}.RData
 #' Reappearing files: reappearing_species_plots_ggplot2_lme_{lme_name}.RData
 #'
-#' @param basename Filename without directory
+#' @param rdata_basename Filename without directory
 #' @return The LME name, or NULL if pattern does not match
-extract_lme_name <- function(basename) {
-  sans <- tools::file_path_sans_ext(basename)
+extract_lme_name <- function(rdata_basename) {
+  sans <- tools::file_path_sans_ext(rdata_basename)
 
   # Indicator plots: indicators_plots_ggplot2_{lme_name}_chunk_{n}
   m <- regmatches(sans, regexec("^indicators_plots_ggplot2_(.+)_chunk_\\d+$", sans, perl = TRUE))[[1]]
