@@ -59,6 +59,68 @@ filtered_rows      = species_data.filter(d => d.species_name === validated_speci
 filtered_lme_ids   = filtered_rows.map(d => +d.lme_id)
 ```
 
+```{ojs}
+//| echo: false
+// Reset selected LME when species changes; auto-select first available LME
+reset_lme = {
+  validated_species;  // reactive dependency on species change
+  if (filtered_lme_ids.length > 0) {
+    mutable selected_lme_id = filtered_lme_ids[0];
+  } else {
+    mutable selected_lme_id = null;
+  }
+}
+```
+
+```{ojs}
+//| echo: false
+// Get selected LME name for display
+selected_lme_name = {
+  if (selected_lme_id === null) return null;
+  const feat = lme_geojson.features.find(f => f.properties.lme_id === selected_lme_id);
+  return feat ? feat.properties.lme_name : null;
+}
+```
+
+```{ojs}
+//| echo: false
+// Show inline plots for the selected LME and species
+{
+  if (selected_lme_id !== null && filtered_lme_ids.includes(selected_lme_id)) {
+    const row = filtered_rows.find(d => +d.lme_id === selected_lme_id);
+    if (row && selected_lme_name) {
+      const container = document.createElement("div");
+
+      const title = document.createElement("h4");
+      title.textContent = `${validated_species} – ${selected_lme_name}`;
+      title.style.marginTop = "12px";
+      container.appendChild(title);
+
+      const plotDiv1 = document.createElement("div");
+      plotDiv1.style.cssText = "width:100%;height:320px;";
+      container.appendChild(plotDiv1);
+
+      const plotDiv2 = document.createElement("div");
+      plotDiv2.style.cssText = "width:100%;height:320px;margin-top:8px;";
+      container.appendChild(plotDiv2);
+
+      renderPlotlyChart(plotDiv1, plotJsonUrl(selected_lme_name, row.species_key, 1),
+        "No occurrences plot available.");
+      renderPlotlyChart(plotDiv2, plotJsonUrl(selected_lme_name, row.species_key, 2),
+        "No grid-cells plot available.");
+
+      yield container;
+    } else {
+      yield html`<p style="color:#999;padding:20px;text-align:center;">No plot data for this selection.</p>`;
+    }
+  } else if (filtered_lme_ids.length > 0) {
+    yield html`<p style="color:#999;padding:20px;text-align:center;">Click on a highlighted region on the map to view plots.</p>`;
+  } else {
+    yield html`<p style="color:#999;padding:20px;text-align:center;">No LME data available for this species.</p>`;
+  }
+}
+```
+
 :::
 
 ::: {.g-col-6}
@@ -99,7 +161,6 @@ PLOTS_JSON_BASE = "data/indicators_plots_json/"
 ```{ojs}
 //| echo: false
 // Build the JSON URL for a given plot.
-// Tries name patterns produced by the R conversion script.
 function plotJsonUrl(lme_name, species_key, index) {
   const baseName = `lme_${lme_name}_species_${species_key}`;
   const filename = `${baseName}_${index}.json`;
@@ -110,7 +171,6 @@ function plotJsonUrl(lme_name, species_key, index) {
 ```{ojs}
 //| echo: false
 // Render a single Plotly chart into a container div.
-// Returns a promise that resolves when the chart is rendered (or fails silently).
 async function renderPlotlyChart(container, jsonUrl, fallbackText) {
   try {
     const resp = await fetch(jsonUrl);
@@ -128,37 +188,8 @@ async function renderPlotlyChart(container, jsonUrl, fallbackText) {
 
 ```{ojs}
 //| echo: false
-// Create popup content with two Plotly charts (occurrences + grid cells).
-function createPopupContent(lme_name, species_name, species_key) {
-  const container = document.createElement("div");
-  container.style.minWidth = "550px";
-
-  const title = Object.assign(document.createElement("h4"), {
-    textContent: `${species_name} – ${lme_name}`
-  });
-  title.style.marginTop = "0";
-  container.appendChild(title);
-
-  // Plot 1 – occurrences
-  const plotDiv1 = document.createElement("div");
-  plotDiv1.style.cssText = "width:520px;height:320px;";
-  container.appendChild(plotDiv1);
-
-  // Plot 2 – occupied grid cells
-  const plotDiv2 = document.createElement("div");
-  plotDiv2.style.cssText = "width:520px;height:320px;margin-top:8px;";
-  container.appendChild(plotDiv2);
-
-  // Render both charts after a short delay to ensure DOM insertion
-  setTimeout(() => {
-    renderPlotlyChart(plotDiv1, plotJsonUrl(lme_name, species_key, 1),
-      "No occurrences plot available.");
-    renderPlotlyChart(plotDiv2, plotJsonUrl(lme_name, species_key, 2),
-      "No grid-cells plot available.");
-  }, 100);
-
-  return container;
-}
+// Mutable to track which LME is selected on the map
+mutable selected_lme_id = null
 ```
 
 ```{ojs}
@@ -198,14 +229,10 @@ update_map = {
           : `${lme_name}: No species data`;
         lyr.bindTooltip(tooltip_text, { permanent: false, direction: "center" });
 
-        // Click: open popup with indicator Plotly charts
+        // Click: select LME to show plots inline
         if (is_filtered) {
-          const row = filtered_rows.find(d => +d.lme_id === lme_id);
           lyr.on("click", () => {
-            L.popup({ maxWidth: 600, maxHeight: 750 })
-              .setLatLng(lyr.getBounds().getCenter())
-              .setContent(createPopupContent(lme_name, validated_species, row.species_key))
-              .openOn(map);
+            mutable selected_lme_id = lme_id;
           });
 
           lyr.on("mouseover", () => lyr.setStyle({ fillOpacity: 0.8 }));
@@ -229,6 +256,4 @@ update_map = {
 
 :::
 
----
-
-**Funding:** This dashboard is being developed in the framework of the GuardIAS prject. GuardIAS receives funding from the European Union's Horizon Europe Research and Innovation Programme (ID No 101181413).
+<span style="font-size:0.8em;color:#999;">**Funding:** This dashboard is being developed in the framework of the GuardIAS project. GuardIAS receives funding from the European Union's Horizon Europe Research and Innovation Programme (ID No 101181413).</span>
