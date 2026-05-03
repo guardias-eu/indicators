@@ -401,10 +401,4 @@ selected_lme_id !== null ? html`<h3 style="margin-top: 0;">${selected_lme_name}<
 
 :::
 
-<style>
-.quarto-container, main.content, #quarto-content, .page-layout-full .content {
-  padding-bottom: 0 !important;
-  margin-bottom: 0 !important;
-}
-</style>
-<p style="font-size:0.8em;color:#999;margin-bottom:0;padding-bottom:0;">**Funding:** This dashboard is being developed in the framework of the GuardIAS project. GuardIAS receives funding from the European Union's Horizon Europe Research and Innovation Programme (ID No 101181413).</p>
+<span style="font-size:0.8em;color:#999;">**Funding:** This dashboard is being developed in the framework of the GuardIAS project. GuardIAS receives funding from the European Union's Horizon Europe Research and Innovation Programme (ID No 101181413).</span>
