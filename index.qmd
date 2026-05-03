@@ -112,7 +112,7 @@ function showSpeciesPlotModal(speciesKey, speciesName, lmeName, prefix) {
   overlay.style.display = "flex";
 
   // Build JSON URLs using the prefix (appearing/reappearing) naming
-  const baseName = `${prefix}_lme_${lmeName}_species_${speciesKey}`;
+  const baseName = prefix ? `${prefix}_lme_${lmeName}_species_${speciesKey}` : `lme_${lmeName}_species_${speciesKey}`;
   const url1 = PLOTS_JSON_BASE + encodeURIComponent(`${baseName}_1.json`);
   const url2 = PLOTS_JSON_BASE + encodeURIComponent(`${baseName}_2.json`);
 
@@ -383,6 +383,18 @@ selected_lme_id !== null ? html`<h3 style="margin-top: 0;">${selected_lme_name}<
       },
       format: {
         specieskey: x => htl.html`<a href="https://www.gbif.org/species/${x}" target="_blank">${x}</a>`,
+        species_name: (value, idx) => {
+          const row = filtered_emerging[idx];
+          const link = document.createElement("a");
+          link.href = "#";
+          link.textContent = value;
+          link.style.cssText = "cursor:pointer;text-decoration:underline;";
+          link.onclick = e => {
+            e.preventDefault();
+            showSpeciesPlotModal(row.specieskey, value, selected_lme_name, null);
+          };
+          return link;
+        },
         growth: x => x ? (+x).toFixed(4) : "—"
       },
       sort: "weighted_em_status",
