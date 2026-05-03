@@ -190,11 +190,10 @@ def download_and_extract_appearing_reappearing() -> None:
         reader = csv.DictReader(f)
         lme_names = sorted({row['lme_name'] for row in reader})
 
-    for dest_dir, prefix in [
-        (APPEARING_RDATA_DIR, "appearing_species_plots_ggplot2_lme_"),
-        (REAPPEARING_RDATA_DIR, "reappearing_species_plots_ggplot2_lme_"),
+    for dest_dir, prefix, label in [
+        (APPEARING_RDATA_DIR, "appearing_species_plots_ggplot2_lme_", "appearing"),
+        (REAPPEARING_RDATA_DIR, "reappearing_species_plots_ggplot2_lme_", "reappearing"),
     ]:
-        label = "appearing" if "appearing" == prefix.split("_")[0] else "reappearing"
         print(f"\n--- {label} species ---")
 
         if dest_dir.exists():
