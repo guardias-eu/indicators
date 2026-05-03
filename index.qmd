@@ -365,11 +365,7 @@ selected_lme_id !== null ? html`<h3 style="margin-top: 0;">${selected_lme_name}<
 // Display emerging species table
 {
   if (selected_lme_id !== null && filtered_emerging.length > 0) {
-    const emerging_numeric = filtered_emerging.map(d => ({
-      ...d,
-      weighted_em_status: d.weighted_em_status !== "" ? +d.weighted_em_status : null
-    }));
-    const table = Inputs.table(emerging_numeric, {
+    const table = Inputs.table(filtered_emerging, {
       columns: ["specieskey", "species_name", "weighted_em_status", "model", "growth"],
       header: {
         specieskey: "speciesKey",
@@ -388,7 +384,7 @@ selected_lme_id !== null ? html`<h3 style="margin-top: 0;">${selected_lme_name}<
       format: {
         specieskey: x => htl.html`<a href="https://www.gbif.org/species/${x}" target="_blank">${x}</a>`,
         species_name: (value, idx) => {
-          const row = emerging_numeric[idx];
+          const row = filtered_emerging[idx];
           const link = document.createElement("a");
           link.href = "#";
           link.textContent = value;
@@ -400,9 +396,7 @@ selected_lme_id !== null ? html`<h3 style="margin-top: 0;">${selected_lme_name}<
           return link;
         },
         growth: x => x ? (+x).toFixed(4) : "—"
-      },
-      sort: "weighted_em_status",
-      reverse: true
+      }
     });
     const wrapper = document.createElement("div");
     wrapper.appendChild(table);
