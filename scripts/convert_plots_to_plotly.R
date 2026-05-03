@@ -159,11 +159,10 @@ extract_lme_name <- function(rdata_basename) {
 #'   where category is e.g. "appearing_species_plots_ggplot2"
 #'
 #' @param rdata_basename  Filename of the source RData file (without path)
-#' @param obj_name        Name of the R object as loaded from the file
 #' @param category        One of "indicators", "appearing", "reappearing"
-#' @return A prefix string to use when calling process_object, or NULL to use
-#'   the default (obj_name) when the pattern is not recognised.
-build_prefix <- function(rdata_basename, obj_name, category) {
+#' @return A prefix string to use when calling process_object, or NULL when 
+#' the pattern is not recognised.
+build_prefix <- function(rdata_basename, category) {
   lme_name <- extract_lme_name(rdata_basename)
   if (is.null(lme_name)) return(NULL)
 
@@ -243,7 +242,7 @@ process_rdata_directory <- function(src_dir, out_dir, label = "plots",
         # Determine the prefix: use the category-aware builder when available,
         # falling back to the raw object name for backwards compatibility.
         prefix <- if (!is.null(category)) {
-          bp <- build_prefix(rdata_basename, obj_name, category)
+          bp <- build_prefix(rdata_basename, category)
           if (!is.null(bp)) bp else obj_name
         } else {
           obj_name
