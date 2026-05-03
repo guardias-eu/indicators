@@ -1,6 +1,13 @@
 name: Update Data from emtrends
 
 on:
+  push:
+    branches:
+      - main
+      - 'copilot/**'
+    paths:
+      - 'scripts/**'
+      - '.github/workflows/update-data.yml'
   schedule:
     # Run every Wednesday at 00:00 UTC
     - cron: '0 0 * * 3'
