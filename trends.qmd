@@ -288,9 +288,9 @@ selected_lme_id !== null ? html`<h4 style="margin-top: 0;">${selected_lme_name}<
     // Wrap in a plain container so Observable does not treat it as an input with checkboxes
     const wrapper = document.createElement("div");
     wrapper.appendChild(table);
-    display(wrapper);
+    yield wrapper;
   } else if (selected_lme_id !== null) {
-    display(html`<p style="text-align: center; color: #999; padding: 20px;">No appearing species data available for this LME</p>`);
+    yield html`<p style="text-align: center; color: #999; padding: 20px;">No appearing species data available for this LME</p>`;
   }
 }
 ```
@@ -349,9 +349,9 @@ selected_lme_id !== null ? html`<h4 style="margin-top: 0;">${selected_lme_name}<
     });
     const wrapper = document.createElement("div");
     wrapper.appendChild(table);
-    display(wrapper);
+    yield wrapper;
   } else if (selected_lme_id !== null) {
-    display(html`<p style="text-align: center; color: #999; padding: 20px;">No reappearing species data available for this LME</p>`);
+    yield html`<p style="text-align: center; color: #999; padding: 20px;">No reappearing species data available for this LME</p>`;
   }
 }
 ```
