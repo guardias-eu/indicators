@@ -6,11 +6,6 @@ format:
     theme: darkly
 ---
 
-**Instructions:**
-
-1. Click on any LME region on the map to view species trends.
-2. Appearing species and reappearing species will be displayed in tables below the map.
-3. Click on a species name to view its indicator plots.
 
 ```{ojs}
 //| echo: false
@@ -125,24 +120,21 @@ function showSpeciesPlotModal(speciesKey, speciesName, lmeName, prefix) {
 }
 ```
 
-## Species Trends Dashboard
-
 ::: {.grid}
 
 ::: {.g-col-12}
-### Map – Click on a region to view species trends
 
 ```{ojs}
 //| echo: false
 // Create map container
-map_container = html`<div id="trends-map" style="height: 500px; width: 100%;"></div>`
+map_container = html`<div id="trends-map" style="height: 350px; width: 100%;"></div>`
 ```
 
 ```{ojs}
 //| echo: false
 // Initialise Leaflet map centred on European seas (same center and zoom as homepage)
 map = {
-  const m = L.map(map_container).setView([55.0, 15.0], 3);
+  const m = L.map(map_container).setView([55.0, 15.0], 1);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors"
@@ -239,16 +231,17 @@ selected_lme_name = selected_lme_id !== null
   : null
 ```
 
+
+```{ojs}
+//| echo: false
+selected_lme_id !== null ? html`<h3 style="margin-top: 0;">${selected_lme_name}</h3>` : html`<p style="text-align: center; color: #999; padding: 20px;">Click on a region to view species trends</p>`
+```
+
 ::: {.grid}
 
 ::: {.g-col-12}
 
 ### Appearing Species
-
-```{ojs}
-//| echo: false
-selected_lme_id !== null ? html`<h4 style="margin-top: 0;">${selected_lme_name}</h4>` : html`<p style="text-align: center; color: #999; padding: 20px;">Click on a region to view species trends</p>`
-```
 
 ```{ojs}
 //| echo: false
@@ -305,10 +298,6 @@ selected_lme_id !== null ? html`<h4 style="margin-top: 0;">${selected_lme_name}<
 
 ### Reappearing Species
 
-```{ojs}
-//| echo: false
-selected_lme_id !== null ? html`<h4 style="margin-top: 0;">${selected_lme_name}</h4>` : html``
-```
 
 ```{ojs}
 //| echo: false

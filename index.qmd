@@ -6,13 +6,6 @@ format:
     theme: darkly
 ---
 
-**Instructions:**
-
-1. Type a species name in the text input on the left (autocomplete suggestions will appear).
-2. The map highlights LME regions containing that species in blue.
-3. Hover over any region to see all species it contains.
-4. Click on a highlighted region to view the indicator plots in a popup.
-
 ```{ojs}
 //| echo: false
 // Load required libraries
@@ -36,8 +29,6 @@ lme_geojson  = d3.json("data/lme_polygons.geojson")
 // Get unique species names for the autocomplete dropdown
 unique_species = [...new Set(species_data.map(d => d.species_name))].sort()
 ```
-
-## Species Dashboard
 
 ::: {.grid}
 
