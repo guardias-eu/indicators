@@ -10,12 +10,14 @@ format:
 
 1. Click on any LME region on the map to view species trends.
 2. Appearing species and reappearing species will be displayed in tables below the map.
+3. Click on a species name to view its indicator plots.
 
 ```{ojs}
 //| echo: false
 // Load required libraries
 d3 = require("d3@7")
 L = require("leaflet@1.9.4")
+Plotly = require("https://cdn.plot.ly/plotly-2.35.2.min.js")
 
 // Add Leaflet CSS
 html`<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />`
@@ -37,6 +39,92 @@ reappearing_species_data = d3.csv("https://raw.githubusercontent.com/guardias-eu
 mutable selected_lme_id = null
 ```
 
+```{ojs}
+//| echo: false
+// Base URL for pre-generated Plotly JSON files.
+PLOTS_JSON_BASE = "data/indicators_plots_json/"
+```
+
+```{ojs}
+//| echo: false
+// Render a single Plotly chart into a container div.
+async function renderPlotlyChart(container, jsonUrl, fallbackText) {
+  try {
+    const resp = await fetch(jsonUrl);
+    if (!resp.ok) throw new Error("not found");
+    const plotData = await resp.json();
+    await Plotly.newPlot(container, plotData.data || [], plotData.layout || {}, {
+      responsive: true,
+      displayModeBar: false
+    });
+  } catch (e) {
+    container.innerHTML = `<p style="color:#999;text-align:center;">${fallbackText}</p>`;
+  }
+}
+```
+
+```{ojs}
+//| echo: false
+// Modal overlay for species plots (shared by appearing and reappearing tables)
+modal_overlay = {
+  const overlay = document.createElement("div");
+  overlay.id = "species-plot-modal";
+  overlay.style.cssText = `
+    display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.7); z-index:10000; justify-content:center;
+    align-items:center; overflow:auto;
+  `;
+  overlay.addEventListener("click", e => {
+    if (e.target === overlay) overlay.style.display = "none";
+  });
+
+  const box = document.createElement("div");
+  box.id = "species-plot-modal-box";
+  box.style.cssText = `
+    background:#222; border-radius:8px; padding:24px; max-width:620px;
+    width:95%; max-height:90vh; overflow:auto; position:relative;
+  `;
+  overlay.appendChild(box);
+
+  document.body.appendChild(overlay);
+  return overlay;
+}
+```
+
+```{ojs}
+//| echo: false
+// Show species plot modal for appearing/reappearing species
+function showSpeciesPlotModal(speciesKey, speciesName, lmeName, prefix) {
+  const overlay = document.getElementById("species-plot-modal");
+  const box = document.getElementById("species-plot-modal-box");
+  box.innerHTML = "";
+
+  const title = document.createElement("h4");
+  title.textContent = `${speciesName} – ${lmeName}`;
+  title.style.marginTop = "0";
+  box.appendChild(title);
+
+  // Plot containers
+  const plotDiv1 = document.createElement("div");
+  plotDiv1.style.cssText = "width:100%;height:320px;";
+  box.appendChild(plotDiv1);
+
+  const plotDiv2 = document.createElement("div");
+  plotDiv2.style.cssText = "width:100%;height:320px;margin-top:8px;";
+  box.appendChild(plotDiv2);
+
+  overlay.style.display = "flex";
+
+  // Build JSON URLs using the prefix (appearing/reappearing) naming
+  const baseName = `${prefix}_lme_${lmeName}_species_${speciesKey}`;
+  const url1 = PLOTS_JSON_BASE + encodeURIComponent(`${baseName}_1.json`);
+  const url2 = PLOTS_JSON_BASE + encodeURIComponent(`${baseName}_2.json`);
+
+  renderPlotlyChart(plotDiv1, url1, "No occurrences plot available.");
+  renderPlotlyChart(plotDiv2, url2, "No grid-cells plot available.");
+}
+```
+
 ## Species Trends Dashboard
 
 ::: {.grid}
@@ -52,7 +140,7 @@ map_container = html`<div id="trends-map" style="height: 500px; width: 100%;"></
 
 ```{ojs}
 //| echo: false
-// Initialise Leaflet map centred on European seas
+// Initialise Leaflet map centred on European seas (same center and zoom as homepage)
 map = {
   const m = L.map(map_container).setView([55.0, 15.0], 4);
 
@@ -165,11 +253,12 @@ selected_lme_id !== null ? html`<h4 style="margin-top: 0;">${selected_lme_name}<
 ```{ojs}
 //| echo: false
 // Display appearing species table
-appearing_table = selected_lme_id !== null && filtered_appearing.length > 0
-  ? Inputs.table(filtered_appearing, {
+{
+  if (selected_lme_id !== null && filtered_appearing.length > 0) {
+    const table = Inputs.table(filtered_appearing, {
       columns: ["specieskey", "species", "first_year"],
       header: {
-        specieskey: "Species Key",
+        specieskey: "speciesKey",
         species: "Species",
         first_year: "First Year"
       },
@@ -178,12 +267,32 @@ appearing_table = selected_lme_id !== null && filtered_appearing.length > 0
         species: 350,
         first_year: 150
       },
+      format: {
+        specieskey: x => htl.html`<a href="https://www.gbif.org/species/${x}" target="_blank">${x}</a>`,
+        species: (value, idx) => {
+          const row = filtered_appearing[idx];
+          const link = document.createElement("a");
+          link.href = "#";
+          link.textContent = value;
+          link.style.cssText = "cursor:pointer;text-decoration:underline;";
+          link.onclick = e => {
+            e.preventDefault();
+            showSpeciesPlotModal(row.specieskey, value, selected_lme_name, "appearing_species_plots_ggplot2");
+          };
+          return link;
+        }
+      },
       sort: "first_year",
       reverse: true
-    })
-  : selected_lme_id !== null
-    ? html`<p style="text-align: center; color: #999; padding: 20px;">No appearing species data available for this LME</p>`
-    : html``
+    });
+    // Wrap in a plain container so Observable does not treat it as an input with checkboxes
+    const wrapper = document.createElement("div");
+    wrapper.appendChild(table);
+    display(wrapper);
+  } else if (selected_lme_id !== null) {
+    display(html`<p style="text-align: center; color: #999; padding: 20px;">No appearing species data available for this LME</p>`);
+  }
+}
 ```
 
 :::
@@ -204,11 +313,12 @@ selected_lme_id !== null ? html`<h4 style="margin-top: 0;">${selected_lme_name}<
 ```{ojs}
 //| echo: false
 // Display reappearing species table
-reappearing_table = selected_lme_id !== null && filtered_reappearing.length > 0
-  ? Inputs.table(filtered_reappearing, {
+{
+  if (selected_lme_id !== null && filtered_reappearing.length > 0) {
+    const table = Inputs.table(filtered_reappearing, {
       columns: ["specieskey", "species", "reappearance_year", "years_without_occurrences"],
       header: {
-        specieskey: "Species Key",
+        specieskey: "speciesKey",
         species: "Species",
         reappearance_year: "Reappearance Year",
         years_without_occurrences: "Years Without Occurrences"
@@ -219,12 +329,31 @@ reappearing_table = selected_lme_id !== null && filtered_reappearing.length > 0
         reappearance_year: 150,
         years_without_occurrences: 200
       },
+      format: {
+        specieskey: x => htl.html`<a href="https://www.gbif.org/species/${x}" target="_blank">${x}</a>`,
+        species: (value, idx) => {
+          const row = filtered_reappearing[idx];
+          const link = document.createElement("a");
+          link.href = "#";
+          link.textContent = value;
+          link.style.cssText = "cursor:pointer;text-decoration:underline;";
+          link.onclick = e => {
+            e.preventDefault();
+            showSpeciesPlotModal(row.specieskey, value, selected_lme_name, "reappearing_species_plots_ggplot2");
+          };
+          return link;
+        }
+      },
       sort: "reappearance_year",
       reverse: true
-    })
-  : selected_lme_id !== null
-    ? html`<p style="text-align: center; color: #999; padding: 20px;">No reappearing species data available for this LME</p>`
-    : html``
+    });
+    const wrapper = document.createElement("div");
+    wrapper.appendChild(table);
+    display(wrapper);
+  } else if (selected_lme_id !== null) {
+    display(html`<p style="text-align: center; color: #999; padding: 20px;">No reappearing species data available for this LME</p>`);
+  }
+}
 ```
 
 :::
