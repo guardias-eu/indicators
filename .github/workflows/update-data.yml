@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
 
     steps:
       - name: Check out repository
@@ -56,13 +57,18 @@ jobs:
             echo "has_changes=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Commit and push changes
+      - name: Create pull request with updated data
         if: steps.check_changes.outputs.has_changes == 'true'
-        run: |
-          git config --local user.email \
-            "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add data/
-          git commit -m \
-            "chore: update data files from emtrends repository"
-          git push
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          add-paths: data/
+          branch: data/update-emtrends-${{ github.run_id }}
+          commit-message: "chore: update data files from emtrends repository"
+          title: "chore: update data files from emtrends repository"
+          body: |
+            Automated update of plot JSON files generated from the latest
+            emtrends data.
+
+            Triggered by workflow run [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          labels: automated
