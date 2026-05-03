@@ -253,8 +253,9 @@ selected_lme_id !== null ? html`<h4 style="margin-top: 0;">${selected_lme_name}<
 ```{ojs}
 //| echo: false
 // Display appearing species table
-appearing_table = selected_lme_id !== null && filtered_appearing.length > 0
-  ? Inputs.table(filtered_appearing, {
+{
+  if (selected_lme_id !== null && filtered_appearing.length > 0) {
+    const table = Inputs.table(filtered_appearing, {
       columns: ["specieskey", "species", "first_year"],
       header: {
         specieskey: "speciesKey",
@@ -281,13 +282,17 @@ appearing_table = selected_lme_id !== null && filtered_appearing.length > 0
           return link;
         }
       },
-      select: false,
       sort: "first_year",
       reverse: true
-    })
-  : selected_lme_id !== null
-    ? html`<p style="text-align: center; color: #999; padding: 20px;">No appearing species data available for this LME</p>`
-    : html``
+    });
+    // Wrap in a plain container so Observable does not treat it as an input with checkboxes
+    const wrapper = document.createElement("div");
+    wrapper.appendChild(table);
+    display(wrapper);
+  } else if (selected_lme_id !== null) {
+    display(html`<p style="text-align: center; color: #999; padding: 20px;">No appearing species data available for this LME</p>`);
+  }
+}
 ```
 
 :::
@@ -308,8 +313,9 @@ selected_lme_id !== null ? html`<h4 style="margin-top: 0;">${selected_lme_name}<
 ```{ojs}
 //| echo: false
 // Display reappearing species table
-reappearing_table = selected_lme_id !== null && filtered_reappearing.length > 0
-  ? Inputs.table(filtered_reappearing, {
+{
+  if (selected_lme_id !== null && filtered_reappearing.length > 0) {
+    const table = Inputs.table(filtered_reappearing, {
       columns: ["specieskey", "species", "reappearance_year", "years_without_occurrences"],
       header: {
         specieskey: "speciesKey",
@@ -338,13 +344,16 @@ reappearing_table = selected_lme_id !== null && filtered_reappearing.length > 0
           return link;
         }
       },
-      select: false,
       sort: "reappearance_year",
       reverse: true
-    })
-  : selected_lme_id !== null
-    ? html`<p style="text-align: center; color: #999; padding: 20px;">No reappearing species data available for this LME</p>`
-    : html``
+    });
+    const wrapper = document.createElement("div");
+    wrapper.appendChild(table);
+    display(wrapper);
+  } else if (selected_lme_id !== null) {
+    display(html`<p style="text-align: center; color: #999; padding: 20px;">No reappearing species data available for this LME</p>`);
+  }
+}
 ```
 
 :::
