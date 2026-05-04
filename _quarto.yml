@@ -7,12 +7,16 @@ project:
 website:
   title: "GuardIAS Emerging Indicators"
   favicon: favicon.ico
+  search: false
   navbar:
     left:
       - text: "Emerging Trends"
         href: index.qmd
       - text: "Species Plots"
         href: species_plots.qmd
+    right:
+      - icon: github
+        href: https://github.com/guardias-eu/indicators
       
 
 format:
