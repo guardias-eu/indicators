@@ -154,7 +154,7 @@ lme_layer = L.featureGroup().addTo(map)
 
 ```{ojs}
 //| echo: false
-// Feature group for the black bounding-box highlight on the selected LME
+// Feature group for the blue bounding-box highlight on the selected LME
 highlight_layer = L.featureGroup().addTo(map)
 ```
 
@@ -260,7 +260,7 @@ update_map = {
 
 ```{ojs}
 //| echo: false
-// Reactive cell: draw a black bounding box around the selected LME
+// Reactive cell: draw a blue bounding box around the selected LME
 highlight_selected = {
   highlight_layer.clearLayers();
 
@@ -269,7 +269,7 @@ highlight_selected = {
     if (feature) {
       L.geoJSON(feature, {
         style: {
-          color: "#000000",
+          color: "#0066cc",
           weight: 4,
           opacity: 1,
           fillOpacity: 0,
