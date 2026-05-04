@@ -3,7 +3,7 @@
 Downloads the two source files and writes them to ``data/``:
 
 * ``data/lme_polygons.geojson``      — LME boundaries (from lme_eu.gpkg)
-* ``data/species_lme_combinations.csv`` — species × LME lookup table
+* ``data/emerging_species_lme_combinations.csv`` — species × LME lookup table
 
 Run from the repository root::
 
@@ -27,7 +27,7 @@ LME_GPKG_URL = (
 )
 SPECIES_CSV_URL = (
     "https://raw.githubusercontent.com/guardias-eu/emtrends/main"
-    "/data/output/species_lme_combinations.csv"
+    "/data/output/emerging_species_lme_combinations.csv"
 )
 
 # ---------------------------------------------------------------------------
@@ -36,7 +36,7 @@ SPECIES_CSV_URL = (
 REPO_ROOT = Path(__file__).parent.parent
 DATA_DIR = REPO_ROOT / "data"
 LME_GEOJSON_OUT = DATA_DIR / "lme_polygons.geojson"
-SPECIES_CSV_OUT = DATA_DIR / "species_lme_combinations.csv"
+SPECIES_CSV_OUT = DATA_DIR / "emerging_species_lme_combinations.csv"
 
 # Geometry simplification tolerance in degrees (keeps file size manageable
 # while preserving recognisable LME shapes).
