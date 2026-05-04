@@ -10,7 +10,7 @@ website:
   navbar:
     left:
       - text: "Emerging Trends"
-        href: trends.qmd
+        href: index.qmd
       - text: "Species Plots"
         href: species_plots.qmd
       
