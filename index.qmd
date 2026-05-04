@@ -1,5 +1,5 @@
 ---
-title: "Species Trends by LME"
+title: "Species Indicators by LME"
 format:
   html:
     page-layout: full
