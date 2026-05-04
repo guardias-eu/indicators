@@ -30,7 +30,7 @@ lme_geojson  = d3.json("data/lme_polygons.geojson")
 unique_species = [...new Set(species_data.map(d => d.species_name))].sort()
 ```
 
-::: {style="text-align:center;margin-bottom:1.5rem;"}
+::: {style="display:flex;justify-content:center;margin-bottom:1.5rem;"}
 
 ```{ojs}
 //| echo: false
