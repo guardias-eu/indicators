@@ -20,7 +20,7 @@ html`<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.c
 ```{ojs}
 //| echo: false
 // Load data files
-species_data = d3.csv("data/species_lme_combinations.csv")
+species_data = d3.csv("data/emerging_species_lme_combinations.csv")
 lme_geojson  = d3.json("data/lme_polygons.geojson")
 ```
 

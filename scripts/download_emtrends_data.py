@@ -3,7 +3,7 @@
 Downloads:
 * ZIP files containing ggplot2 objects from indicators_plots/ directory
   (indicator plots, appearing species plots, reappearing species plots)
-* species_lme_combinations.csv file
+* emerging_species_lme_combinations.csv file
 
 These files are updated weekly in the emtrends repository and need to be
 synced to this repository for local access.
@@ -32,7 +32,7 @@ from urllib.parse import quote
 # Source URLs
 # ---------------------------------------------------------------------------
 EMTRENDS_BASE_URL = "https://raw.githubusercontent.com/guardias-eu/emtrends/main"
-SPECIES_CSV_URL = f"{EMTRENDS_BASE_URL}/data/output/species_lme_combinations.csv"
+SPECIES_CSV_URL = f"{EMTRENDS_BASE_URL}/data/output/emerging_species_lme_combinations.csv"
 PLOTS_BASE_URL = f"{EMTRENDS_BASE_URL}/data/output/indicators_plots"
 
 # ---------------------------------------------------------------------------
@@ -43,7 +43,7 @@ DATA_DIR = REPO_ROOT / "data"
 RDATA_DIR = DATA_DIR / "indicators_plots_rdata"
 APPEARING_RDATA_DIR = DATA_DIR / "appearing_species_rdata"
 REAPPEARING_RDATA_DIR = DATA_DIR / "reappearing_species_rdata"
-SPECIES_CSV_OUT = DATA_DIR / "species_lme_combinations.csv"
+SPECIES_CSV_OUT = DATA_DIR / "emerging_species_lme_combinations.csv"
 TEMP_DIR = DATA_DIR / "temp_downloads"
 
 # ---------------------------------------------------------------------------
@@ -219,8 +219,8 @@ def download_and_extract_appearing_reappearing() -> None:
 
 
 def download_species_csv() -> None:
-    """Download the species_lme_combinations.csv file."""
-    print("\n=== Downloading species_lme_combinations.csv ===")
+    """Download the emerging_species_lme_combinations.csv file."""
+    print("\n=== Downloading emerging_species_lme_combinations.csv ===")
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     download_file(SPECIES_CSV_URL, SPECIES_CSV_OUT)
 

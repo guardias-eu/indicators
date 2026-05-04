@@ -10,9 +10,9 @@ website:
   search: false
   navbar:
     left:
-      - text: "Emerging Trends"
+      - text: "Emerging Indicators"
         href: index.qmd
-      - text: "Species Plots"
+      - text: "Emerging Plots"
         href: species_plots.qmd
     right:
       - icon: github
