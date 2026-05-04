@@ -132,7 +132,7 @@ selected_lme_name = {
 ```{ojs}
 //| echo: false
 // Create map container
-map_container = html`<div id="map" style="height: 500px; width: 100%; margin-top: 2.5rem;"></div>`
+map_container = html`<div id="map" style="height: 500px; width: 100%; margin-top: 2.7rem;"></div>`
 ```
 
 ```{ojs}
