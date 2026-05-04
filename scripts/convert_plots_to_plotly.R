@@ -47,6 +47,46 @@ cat("JSON directory:", json_dir, "\n\n")
 # Helper functions
 # ---------------------------------------------------------------------------
 
+#' Normalize non-deterministic Plotly IDs in a JSON string
+#'
+#' Plotly generates random hex IDs (e.g. in attrs, cur_data, visdat) that
+#' change on every conversion even when the underlying plot data is identical.
+#' This function replaces those random IDs with stable, sequential
+#' placeholders so that unchanged plots produce byte-identical JSON files.
+#'
+#' @param json_str A JSON string produced by plotly_json()
+#' @return The JSON string with deterministic IDs
+normalize_plotly_ids <- function(json_str) {
+  parsed <- fromJSON(json_str, simplifyVector = FALSE)
+
+  # Collect all random IDs from known locations
+  old_ids <- character(0)
+  if (!is.null(parsed$attrs))    old_ids <- c(old_ids, names(parsed$attrs))
+  if (!is.null(parsed$visdat))   old_ids <- c(old_ids, names(parsed$visdat))
+  if (!is.null(parsed$cur_data)) old_ids <- c(old_ids, parsed$cur_data)
+  old_ids <- unique(old_ids)
+
+  if (length(old_ids) == 0) return(json_str)
+
+  # Sort by decreasing length to avoid partial substring replacements
+  old_ids <- old_ids[order(nchar(old_ids), decreasing = TRUE)]
+
+  # Build a mapping from random IDs to stable sequential IDs
+  id_map <- setNames(
+    sprintf("trace_%d", seq_along(old_ids)),
+    old_ids
+  )
+
+  # Replace all occurrences in the JSON string
+  result <- json_str
+  for (old_id in names(id_map)) {
+    result <- gsub(old_id, id_map[[old_id]], result, fixed = TRUE)
+  }
+
+  result
+}
+
+
 #' Convert a ggplot2 object to Plotly JSON
 #'
 #' @param ggplot_obj A ggplot2 object
@@ -68,6 +108,11 @@ convert_ggplot_to_plotly_json <- function(ggplot_obj, output_file) {
     # Convert to JSON
     plotly_json <- plotly_obj %>%
       plotly_json(pretty = FALSE)
+
+    # Normalize non-deterministic IDs (attrs, cur_data, visdat keys)
+    # Plotly generates random hex IDs that change on every run even when
+    # the plot data is identical, causing spurious git diffs.
+    plotly_json <- normalize_plotly_ids(plotly_json)
 
     # Write to file
     writeLines(plotly_json, output_file)
