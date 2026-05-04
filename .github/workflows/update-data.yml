@@ -72,3 +72,4 @@ jobs:
 
             Triggered by workflow run [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
           labels: automated
+          reviewers: damianooldoni
