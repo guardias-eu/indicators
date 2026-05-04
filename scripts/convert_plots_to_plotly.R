@@ -68,18 +68,35 @@ normalize_plotly_ids <- function(json_str) {
 
   if (length(old_ids) == 0) return(json_str)
 
-  # Sort by decreasing length to avoid partial substring replacements
-  old_ids <- old_ids[order(nchar(old_ids), decreasing = TRUE)]
+  # Build a canonical ordering based on the *content* associated with each ID
+  # so that the mapping is stable across runs even when the random IDs change.
+  # We serialise the attrs entry for each ID (if it exists) and sort by that
+  # representation.  IDs without an attrs entry are sorted alphabetically by
+  # the ID itself (arbitrary but deterministic for a given run; these are
+  # typically duplicates already covered by another location).
+  sort_keys <- vapply(old_ids, function(id) {
+    if (!is.null(parsed$attrs[[id]])) {
+      toJSON(parsed$attrs[[id]], auto_unbox = TRUE)
+    } else {
+      id
+    }
+  }, character(1))
+  canonical_order <- old_ids[order(sort_keys)]
 
-  # Build a mapping from random IDs to stable sequential IDs
+  # Build a mapping from random IDs to stable sequential IDs using the
+  # canonical (content-based) order for numbering.
   id_map <- setNames(
-    sprintf("trace_%d", seq_along(old_ids)),
-    old_ids
+    sprintf("trace_%d", seq_along(canonical_order)),
+    canonical_order
   )
 
-  # Replace all occurrences in the JSON string
+  # Replace all occurrences in the JSON string.
+  # Process IDs in decreasing length order to avoid partial substring
+  # replacements (e.g. "abc" matching inside "xabcdef").
+  replacement_order <- names(id_map)[order(nchar(names(id_map)),
+                                           decreasing = TRUE)]
   result <- json_str
-  for (old_id in names(id_map)) {
+  for (old_id in replacement_order) {
     result <- gsub(old_id, id_map[[old_id]], result, fixed = TRUE)
   }
 
