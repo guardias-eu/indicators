@@ -30,9 +30,7 @@ lme_geojson  = d3.json("data/lme_polygons.geojson")
 unique_species = [...new Set(species_data.map(d => d.species_name))].sort()
 ```
 
-::: {.grid}
-
-::: {.g-col-6}
+::: {style="text-align:center;margin-bottom:1.5rem;"}
 
 ```{ojs}
 //| echo: false
@@ -43,6 +41,8 @@ viewof selected_species = Inputs.text({
   datalist: unique_species
 })
 ```
+
+:::
 
 ```{ojs}
 //| echo: false
@@ -81,6 +81,10 @@ selected_lme_name = {
   return feat ? feat.properties.lme_name : null;
 }
 ```
+
+::: {.grid}
+
+::: {.g-col-6}
 
 ```{ojs}
 //| echo: false
