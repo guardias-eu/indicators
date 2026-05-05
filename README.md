@@ -1,7 +1,7 @@
-# GUARDIAS Indicators Dashboard
+# GUARDIAS Emerging Trends Dashboard
 
-Interactive Quarto dashboard for exploring emergence indicator plots for marine
-species across Large Marine Ecosystem (LME) regions.
+Interactive Quarto dashboard for exploring emerging trends for marine
+species across the European Large Marine Ecosystem (LME) regions.
 
 ## Features
 
