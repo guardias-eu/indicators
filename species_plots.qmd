@@ -1,5 +1,4 @@
 ---
-title: "GUARDIAS Marine Species Indicators"
 format:
   html:
     page-layout: full
