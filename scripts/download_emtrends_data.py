@@ -3,7 +3,7 @@
 Downloads:
 * ZIP files containing ggplot2 objects from indicators_plots/ directory
   (indicator plots, appearing species plots, reappearing species plots)
-* emerging_species_lme_combinations.csv file
+* species CSV files (emerging, appearing, reappearing)
 
 These files are updated weekly in the emtrends repository and need to be
 synced to this repository for local access.
@@ -33,6 +33,8 @@ from urllib.parse import quote
 # ---------------------------------------------------------------------------
 EMTRENDS_BASE_URL = "https://raw.githubusercontent.com/guardias-eu/emtrends/main"
 SPECIES_CSV_URL = f"{EMTRENDS_BASE_URL}/data/output/emerging_species_lme_combinations.csv"
+APPEARING_SPECIES_CSV_URL = f"{EMTRENDS_BASE_URL}/data/output/appearing_species.csv"
+REAPPEARING_SPECIES_CSV_URL = f"{EMTRENDS_BASE_URL}/data/output/reappearing_species.csv"
 PLOTS_BASE_URL = f"{EMTRENDS_BASE_URL}/data/output/indicators_plots"
 
 # ---------------------------------------------------------------------------
@@ -44,6 +46,8 @@ RDATA_DIR = DATA_DIR / "indicators_plots_rdata"
 APPEARING_RDATA_DIR = DATA_DIR / "appearing_species_rdata"
 REAPPEARING_RDATA_DIR = DATA_DIR / "reappearing_species_rdata"
 SPECIES_CSV_OUT = DATA_DIR / "emerging_species_lme_combinations.csv"
+APPEARING_SPECIES_CSV_OUT = DATA_DIR / "appearing_species.csv"
+REAPPEARING_SPECIES_CSV_OUT = DATA_DIR / "reappearing_species.csv"
 TEMP_DIR = DATA_DIR / "temp_downloads"
 
 # ---------------------------------------------------------------------------
@@ -218,11 +222,13 @@ def download_and_extract_appearing_reappearing() -> None:
         shutil.rmtree(TEMP_DIR)
 
 
-def download_species_csv() -> None:
-    """Download the emerging_species_lme_combinations.csv file."""
-    print("\n=== Downloading emerging_species_lme_combinations.csv ===")
+def download_species_csvs() -> None:
+    """Download species CSV files used by dashboard pages."""
+    print("\n=== Downloading species CSV files ===")
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     download_file(SPECIES_CSV_URL, SPECIES_CSV_OUT)
+    download_file(APPEARING_SPECIES_CSV_URL, APPEARING_SPECIES_CSV_OUT)
+    download_file(REAPPEARING_SPECIES_CSV_URL, REAPPEARING_SPECIES_CSV_OUT)
 
 
 def main() -> None:
@@ -231,7 +237,7 @@ def main() -> None:
     print(f"Target directory: {DATA_DIR}")
 
     # First, download the CSV file (we need this to know which files to download)
-    download_species_csv()
+    download_species_csvs()
 
     # Then download and extract RData files from ZIP archives
     download_and_extract_rdata_files()

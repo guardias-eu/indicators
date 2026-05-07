@@ -9,6 +9,7 @@ website:
   favicon: favicon.ico
   search: false
   navbar:
+    logo: images/assets/guardias_logo.png
     left:
       - text: "Emerging Trends"
         href: index.qmd
