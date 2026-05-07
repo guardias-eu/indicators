@@ -130,28 +130,24 @@ selected_lme_name = {
 
 ```{ojs}
 //| echo: false
-// Build and render a descriptive sentence for the validated species
+// Build and render a descriptive sentence for the validated species and selected LME
 {
-  const rows = species_data.filter(d => d.species_name === validated_species);
-  if (rows.length > 0) {
-    const firstRow = rows[0];
-    const speciesKey = firstRow.species_key;
+  // Find the row matching both species and currently selected LME
+  const row = selected_lme_id !== null
+    ? species_data.find(d => d.species_name === validated_species && +d.lme_id === selected_lme_id)
+    : null;
+
+  if (row) {
+    const speciesLink = `<a href="https://www.gbif.org/species/${row.species_key}">${validated_species}</a>`;
+    const lmeName = row.lme_name;
     let htmlStr;
 
-    const speciesLink = `<a href="https://www.gbif.org/species/${speciesKey}">${validated_species}</a>`;
-
-    if (firstRow.plot_prefix === "appearing_species_plots_ggplot2") {
-      // Use the earliest first_year across all LME rows for this species
-      const minYear = Math.min(...rows.map(d => d.first_year).filter(y => y !== null));
-      htmlStr = `The species ${speciesLink} is appearing in <strong>${minYear}</strong>.`;
-    } else if (firstRow.plot_prefix === "reappearing_species_plots_ggplot2") {
-      const year = firstRow.reappearance_year;
-      const yearsAway = firstRow.years_without_occurrences;
-      htmlStr = `The species ${speciesLink} is reappearing in <strong>${year}</strong> after <strong>${yearsAway}</strong> years.`;
+    if (row.plot_prefix === "appearing_species_plots_ggplot2") {
+      htmlStr = `The species ${speciesLink} in the <strong>${lmeName}</strong> is appearing in <strong>${row.first_year}</strong>.`;
+    } else if (row.plot_prefix === "reappearing_species_plots_ggplot2") {
+      htmlStr = `The species ${speciesLink} in the <strong>${lmeName}</strong> is reappearing in <strong>${row.reappearance_year}</strong> after <strong>${row.years_without_occurrences}</strong> years.`;
     } else {
-      const emScore = firstRow.weighted_em_status;
-      const model = firstRow.model;
-      htmlStr = `The species ${speciesLink} has a total emerging score of <strong>${emScore}</strong>. Model used: <strong>${model}</strong>.`;
+      htmlStr = `The species ${speciesLink} in the <strong>${lmeName}</strong> has a total emerging score of <strong>${row.weighted_em_status}</strong>. Model used: <strong>${row.model}</strong>.`;
     }
 
     const p = document.createElement("p");
