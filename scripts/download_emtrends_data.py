@@ -32,7 +32,7 @@ from urllib.parse import quote
 # Source URLs
 # ---------------------------------------------------------------------------
 EMTRENDS_BASE_URL = "https://raw.githubusercontent.com/guardias-eu/emtrends/main"
-SPECIES_CSV_URL = f"{EMTRENDS_BASE_URL}/data/output/emerging_species_lme_combinations.csv"
+SPECIES_CSV_URL = f"{EMTRENDS_BASE_URL}/data/output/emerging_trends_ranking_list.csv"
 APPEARING_SPECIES_CSV_URL = f"{EMTRENDS_BASE_URL}/data/output/appearing_species.csv"
 REAPPEARING_SPECIES_CSV_URL = f"{EMTRENDS_BASE_URL}/data/output/reappearing_species.csv"
 PLOTS_BASE_URL = f"{EMTRENDS_BASE_URL}/data/output/indicators_plots"
@@ -45,7 +45,7 @@ DATA_DIR = REPO_ROOT / "data"
 RDATA_DIR = DATA_DIR / "indicators_plots_rdata"
 APPEARING_RDATA_DIR = DATA_DIR / "appearing_species_rdata"
 REAPPEARING_RDATA_DIR = DATA_DIR / "reappearing_species_rdata"
-SPECIES_CSV_OUT = DATA_DIR / "emerging_species_lme_combinations.csv"
+SPECIES_CSV_OUT = DATA_DIR / "emerging_trends_ranking_list.csv"
 APPEARING_SPECIES_CSV_OUT = DATA_DIR / "appearing_species.csv"
 REAPPEARING_SPECIES_CSV_OUT = DATA_DIR / "reappearing_species.csv"
 TEMP_DIR = DATA_DIR / "temp_downloads"
@@ -132,7 +132,7 @@ def download_and_extract_rdata_files() -> None:
     lme_species = {}
     for row in rows:
         lme_name = row['lme_name']
-        species_key = row['species_key']
+        species_key = row['specieskey']
         if lme_name not in lme_species:
             lme_species[lme_name] = []
         lme_species[lme_name].append(species_key)

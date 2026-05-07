@@ -19,7 +19,7 @@ html`<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.c
 ```{ojs}
 //| echo: false
 // Load data files
-emerging_species_data = d3.csv("data/emerging_species_lme_combinations.csv")
+emerging_species_data = d3.csv("data/emerging_trends_ranking_list.csv")
 appearing_species_data = d3.csv("data/appearing_species.csv")
 reappearing_species_data = d3.csv("data/reappearing_species.csv")
 lme_geojson  = d3.json("data/lme_polygons.geojson")
@@ -30,14 +30,16 @@ lme_geojson  = d3.json("data/lme_polygons.geojson")
 // Merge all species categories into a common schema used by this page
 species_data = [
   ...emerging_species_data.map(d => ({
-    species_key: d.species_key,
+    species_key: d.specieskey,
     species_name: d.species_name,
     lme_id: d.lme_id,
     lme_name: d.lme_name,
     plot_prefix: "",
     first_year: null,
     reappearance_year: null,
-    years_without_occurrences: null
+    years_without_occurrences: null,
+    weighted_em_status: +d.weighted_em_status,
+    model: d.model
   })),
   ...appearing_species_data.map(d => ({
     species_key: d.specieskey,
@@ -47,7 +49,9 @@ species_data = [
     plot_prefix: "appearing_species_plots_ggplot2",
     first_year: +d.first_year,
     reappearance_year: null,
-    years_without_occurrences: null
+    years_without_occurrences: null,
+    weighted_em_status: null,
+    model: null
   })),
   ...reappearing_species_data.map(d => ({
     species_key: d.specieskey,
@@ -57,7 +61,9 @@ species_data = [
     plot_prefix: "reappearing_species_plots_ggplot2",
     first_year: null,
     reappearance_year: +d.reappearance_year,
-    years_without_occurrences: +d.years_without_occurrences
+    years_without_occurrences: +d.years_without_occurrences,
+    weighted_em_status: null,
+    model: null
   }))
 ]
 ```
@@ -143,7 +149,9 @@ selected_lme_name = {
       const yearsAway = firstRow.years_without_occurrences;
       htmlStr = `The species ${speciesLink} is reappearing in <strong>${year}</strong> after <strong>${yearsAway}</strong> years.`;
     } else {
-      htmlStr = `The species ${speciesLink} has an emerging trend.`;
+      const emScore = firstRow.weighted_em_status;
+      const model = firstRow.model;
+      htmlStr = `The species ${speciesLink} has a total emerging score of <strong>${emScore}</strong>. Model used: <strong>${model}</strong>.`;
     }
 
     const p = document.createElement("p");

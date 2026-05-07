@@ -17,7 +17,7 @@ species across the European Large Marine Ecosystem (LME) regions.
 | File | Source | Update frequency |
 |------|--------|------------------|
 | `data/lme_polygons.geojson` | Derived from [`lme_eu.gpkg`](https://github.com/guardias-eu/build-eu-cube/blob/main/data/output/lme_eu.gpkg) (guardias-eu/build-eu-cube), simplified at 0.1° tolerance | Manual (via `scripts/prepare_data.py`) |
-| `data/emerging_species_lme_combinations.csv` | [`emerging_species_lme_combinations.csv`](https://github.com/guardias-eu/emtrends/blob/main/data/output/emerging_species_lme_combinations.csv) (guardias-eu/emtrends) | Weekly (via GitHub Actions) |
+| `data/emerging_trends_ranking_list.csv` | [`emerging_trends_ranking_list.csv`](https://github.com/guardias-eu/emtrends/blob/main/data/output/emerging_trends_ranking_list.csv) (guardias-eu/emtrends) | Weekly (via GitHub Actions) |
 | `data/appearing_species.csv` | [`appearing_species.csv`](https://github.com/guardias-eu/emtrends/blob/main/data/output/appearing_species.csv) (guardias-eu/emtrends) | Weekly (via GitHub Actions) |
 | `data/reappearing_species.csv` | [`reappearing_species.csv`](https://github.com/guardias-eu/emtrends/blob/main/data/output/reappearing_species.csv) (guardias-eu/emtrends) | Weekly (via GitHub Actions) |
 | `data/indicators_plots_rdata/` | RData files extracted from ZIP archives in [`indicators_plots/`](https://github.com/guardias-eu/emtrends/tree/main/data/output/indicators_plots) (guardias-eu/emtrends) | Weekly (via GitHub Actions) |
@@ -34,7 +34,7 @@ The indicator plots follow this processing pipeline:
 
 ### Automated data updates
 
-The indicator plot files and species CSV files (`emerging_species_lme_combinations.csv`, `appearing_species.csv`, `reappearing_species.csv`) are automatically updated weekly via a GitHub Actions workflow (`.github/workflows/update-data.yml`). The workflow runs every Wednesday at 00:00 UTC and can also be triggered manually via workflow dispatch.
+The indicator plot files and species CSV files (`emerging_trends_ranking_list.csv`, `appearing_species.csv`, `reappearing_species.csv`) are automatically updated weekly via a GitHub Actions workflow (`.github/workflows/update-data.yml`). The workflow runs every Wednesday at 00:00 UTC and can also be triggered manually via workflow dispatch.
 
 To manually trigger an update:
 1. Go to the [Actions tab](../../actions/workflows/update-data.yml)
