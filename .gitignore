@@ -10,3 +10,5 @@ __pycache__/
 /data/appearing_species_rdata/
 /data/reappearing_species_rdata/
 /data/temp_downloads/
+
+**/*.quarto_ipynb
