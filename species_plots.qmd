@@ -135,7 +135,7 @@ selected_lme_name = {
     if (firstRow.plot_prefix === "appearing_species_plots_ggplot2") {
       // Use the earliest first_year across all LME rows for this species
       const minYear = Math.min(...rows.map(d => d.first_year).filter(y => y !== null));
-      htmlStr = `The species (<code>speciesKey</code> <a href="https://www.gbif.org/species/${speciesKey}">${speciesKey}</a>) is appearing in <strong>${minYear}</strong>.`;
+      htmlStr = `The species (<a href="https://www.gbif.org/species/${speciesKey}">${speciesKey}</a>) is appearing in <strong>${minYear}</strong>.`;
     } else if (firstRow.plot_prefix === "reappearing_species_plots_ggplot2") {
       const year = firstRow.reappearance_year;
       const yearsAway = firstRow.years_without_occurrences;
