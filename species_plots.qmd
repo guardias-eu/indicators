@@ -28,54 +28,50 @@ lme_geojson  = d3.json("data/lme_polygons.geojson")
 ```{ojs}
 //| echo: false
 // Merge all species categories into a common schema used by this page.
-// The emerging CSV may use either "specieskey" or "species_key" depending on
-// which version of the file is present, so accept both column names.
-species_data = {
-  // Log raw column names from each CSV for debugging
-  if (emerging_species_data.length > 0) {
-    console.log("[DEBUG] emerging CSV columns:", Object.keys(emerging_species_data[0]));
-    console.log("[DEBUG] emerging CSV first row:", emerging_species_data[0]);
-  }
-
-  return [
-    ...emerging_species_data.map(d => ({
-      species_key: d.specieskey ?? d.species_key ?? "",
-      species_name: d.species_name ?? "",
-      lme_id: d.lme_id ?? "",
-      lme_name: d.lme_name ?? "",
+species_data = [
+  ...emerging_species_data.map(function(d) {
+    return {
+      species_key: d["specieskey"] || d["species_key"] || "",
+      species_name: d["species_name"] || "",
+      lme_id: d["lme_id"] || "",
+      lme_name: d["lme_name"] || "",
       plot_prefix: "",
       first_year: null,
       reappearance_year: null,
       years_without_occurrences: null,
-      weighted_em_status: +(d.weighted_em_status ?? d.score ?? 0),
-      model: d.model ?? ""
-    })),
-    ...appearing_species_data.map(d => ({
-      species_key: d.specieskey ?? d.species_key ?? "",
-      species_name: d.species ?? "",
-      lme_id: d.lme_id ?? "",
-      lme_name: d.lme_name ?? "",
+      weighted_em_status: d["weighted_em_status"] !== undefined ? +d["weighted_em_status"] : null,
+      model_used: d["model"] || ""
+    };
+  }),
+  ...appearing_species_data.map(function(d) {
+    return {
+      species_key: d["specieskey"] || d["species_key"] || "",
+      species_name: d["species"] || "",
+      lme_id: d["lme_id"] || "",
+      lme_name: d["lme_name"] || "",
       plot_prefix: "appearing_species_plots_ggplot2",
-      first_year: +d.first_year,
+      first_year: +d["first_year"],
       reappearance_year: null,
       years_without_occurrences: null,
       weighted_em_status: null,
-      model: null
-    })),
-    ...reappearing_species_data.map(d => ({
-      species_key: d.specieskey ?? d.species_key ?? "",
-      species_name: d.species ?? "",
-      lme_id: d.lme_id ?? "",
-      lme_name: d.lme_name ?? "",
+      model_used: null
+    };
+  }),
+  ...reappearing_species_data.map(function(d) {
+    return {
+      species_key: d["specieskey"] || d["species_key"] || "",
+      species_name: d["species"] || "",
+      lme_id: d["lme_id"] || "",
+      lme_name: d["lme_name"] || "",
       plot_prefix: "reappearing_species_plots_ggplot2",
       first_year: null,
-      reappearance_year: +d.reappearance_year,
-      years_without_occurrences: +d.years_without_occurrences,
+      reappearance_year: +d["reappearance_year"],
+      years_without_occurrences: +d["years_without_occurrences"],
       weighted_em_status: null,
-      model: null
-    }))
-  ];
-}
+      model_used: null
+    };
+  })
+]
 ```
 
 ```{ojs}
@@ -153,7 +149,6 @@ current_row = {
 // Build and render a descriptive sentence for the validated species and selected LME
 {
   const row = current_row;
-  console.log("[DEBUG] sentence row:", row);
 
   if (row && row.species_key) {
     const speciesLink = `<a href="https://www.gbif.org/species/${row.species_key}">${validated_species}</a>`;
@@ -165,7 +160,15 @@ current_row = {
     } else if (row.plot_prefix === "reappearing_species_plots_ggplot2") {
       htmlStr = `The species ${speciesLink} in the <strong>${lmeName}</strong> is reappearing in <strong>${row.reappearance_year}</strong> after <strong>${row.years_without_occurrences}</strong> years.`;
     } else {
-      htmlStr = `The species ${speciesLink} in the <strong>${lmeName}</strong> has a total emerging score of <strong>${row.weighted_em_status}</strong>. Model used: <strong>${row.model || "unknown"}</strong>.`;
+      // Look up score and model directly from the raw CSV data to avoid
+      // any potential issues with the intermediate species_data mapping.
+      const rawRow = emerging_species_data.find(function(d) {
+        return (d["specieskey"] || d["species_key"]) === row.species_key
+            && d["lme_id"] === row.lme_id;
+      });
+      const score = rawRow ? rawRow["weighted_em_status"] : row.weighted_em_status;
+      const modelName = rawRow ? rawRow["model"] : row.model_used;
+      htmlStr = `The species ${speciesLink} in the <strong>${lmeName}</strong> has a total emerging score of <strong>${score}</strong>. Model used: <strong>${modelName || "unknown"}</strong>.`;
     }
 
     const p = document.createElement("p");
