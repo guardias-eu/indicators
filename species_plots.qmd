@@ -27,45 +27,55 @@ lme_geojson  = d3.json("data/lme_polygons.geojson")
 
 ```{ojs}
 //| echo: false
-// Merge all species categories into a common schema used by this page
-species_data = [
-  ...emerging_species_data.map(d => ({
-    species_key: d.specieskey,
-    species_name: d.species_name,
-    lme_id: d.lme_id,
-    lme_name: d.lme_name,
-    plot_prefix: "",
-    first_year: null,
-    reappearance_year: null,
-    years_without_occurrences: null,
-    weighted_em_status: +d.weighted_em_status,
-    model: d.model
-  })),
-  ...appearing_species_data.map(d => ({
-    species_key: d.specieskey,
-    species_name: d.species,
-    lme_id: d.lme_id,
-    lme_name: d.lme_name,
-    plot_prefix: "appearing_species_plots_ggplot2",
-    first_year: +d.first_year,
-    reappearance_year: null,
-    years_without_occurrences: null,
-    weighted_em_status: null,
-    model: null
-  })),
-  ...reappearing_species_data.map(d => ({
-    species_key: d.specieskey,
-    species_name: d.species,
-    lme_id: d.lme_id,
-    lme_name: d.lme_name,
-    plot_prefix: "reappearing_species_plots_ggplot2",
-    first_year: null,
-    reappearance_year: +d.reappearance_year,
-    years_without_occurrences: +d.years_without_occurrences,
-    weighted_em_status: null,
-    model: null
-  }))
-]
+// Merge all species categories into a common schema used by this page.
+// The emerging CSV may use either "specieskey" or "species_key" depending on
+// which version of the file is present, so accept both column names.
+species_data = {
+  // Log raw column names from each CSV for debugging
+  if (emerging_species_data.length > 0) {
+    console.log("[DEBUG] emerging CSV columns:", Object.keys(emerging_species_data[0]));
+    console.log("[DEBUG] emerging CSV first row:", emerging_species_data[0]);
+  }
+
+  return [
+    ...emerging_species_data.map(d => ({
+      species_key: d.specieskey ?? d.species_key ?? "",
+      species_name: d.species_name ?? "",
+      lme_id: d.lme_id ?? "",
+      lme_name: d.lme_name ?? "",
+      plot_prefix: "",
+      first_year: null,
+      reappearance_year: null,
+      years_without_occurrences: null,
+      weighted_em_status: +(d.weighted_em_status ?? d.score ?? 0),
+      model: d.model ?? ""
+    })),
+    ...appearing_species_data.map(d => ({
+      species_key: d.specieskey ?? d.species_key ?? "",
+      species_name: d.species ?? "",
+      lme_id: d.lme_id ?? "",
+      lme_name: d.lme_name ?? "",
+      plot_prefix: "appearing_species_plots_ggplot2",
+      first_year: +d.first_year,
+      reappearance_year: null,
+      years_without_occurrences: null,
+      weighted_em_status: null,
+      model: null
+    })),
+    ...reappearing_species_data.map(d => ({
+      species_key: d.specieskey ?? d.species_key ?? "",
+      species_name: d.species ?? "",
+      lme_id: d.lme_id ?? "",
+      lme_name: d.lme_name ?? "",
+      plot_prefix: "reappearing_species_plots_ggplot2",
+      first_year: null,
+      reappearance_year: +d.reappearance_year,
+      years_without_occurrences: +d.years_without_occurrences,
+      weighted_em_status: null,
+      model: null
+    }))
+  ];
+}
 ```
 
 ```{ojs}
@@ -124,12 +134,15 @@ reset_lme = {
 ```{ojs}
 //| echo: false
 // The data row for the currently selected species + LME.
-// Access filtered_rows unconditionally so OJS always tracks this dependency,
-// even when selected_lme_id is null.
+// Falls back to filtered_rows[0] so a row is always available if data exists.
 current_row = {
   const rows = filtered_rows;
-  if (selected_lme_id === null || rows.length === 0) return null;
-  return rows.find(d => +d.lme_id === selected_lme_id) || null;
+  if (rows.length === 0) return null;
+  if (selected_lme_id !== null) {
+    const match = rows.find(d => +d.lme_id === selected_lme_id);
+    if (match) return match;
+  }
+  return rows[0];
 }
 ```
 
@@ -140,6 +153,7 @@ current_row = {
 // Build and render a descriptive sentence for the validated species and selected LME
 {
   const row = current_row;
+  console.log("[DEBUG] sentence row:", row);
 
   if (row && row.species_key) {
     const speciesLink = `<a href="https://www.gbif.org/species/${row.species_key}">${validated_species}</a>`;
