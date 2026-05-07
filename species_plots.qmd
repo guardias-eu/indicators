@@ -99,8 +99,13 @@ validated_species = unique_species.includes(selected_species)
 ```{ojs}
 //| echo: false
 // Rows for the validated species, one per LME
-filtered_rows      = species_data.filter(d => d.species_name === validated_species)
-filtered_lme_ids   = [...new Set(filtered_rows.map(d => +d.lme_id))]
+filtered_rows = species_data.filter(d => d.species_name === validated_species)
+```
+
+```{ojs}
+//| echo: false
+// LME IDs where the validated species is present
+filtered_lme_ids = [...new Set(filtered_rows.map(d => +d.lme_id))]
 ```
 
 ```{ojs}
@@ -118,13 +123,13 @@ reset_lme = {
 
 ```{ojs}
 //| echo: false
-// Named reactive variable: the data row for the currently selected species + LME.
-// Using a named cell ensures OJS properly tracks the dependency on both
-// filtered_rows (which updates when the species changes) and selected_lme_id
-// (which updates on map click or species change via reset_lme).
+// The data row for the currently selected species + LME.
+// Access filtered_rows unconditionally so OJS always tracks this dependency,
+// even when selected_lme_id is null.
 current_row = {
-  if (selected_lme_id === null) return null;
-  return filtered_rows.find(d => +d.lme_id === selected_lme_id) || null;
+  const rows = filtered_rows;
+  if (selected_lme_id === null || rows.length === 0) return null;
+  return rows.find(d => +d.lme_id === selected_lme_id) || null;
 }
 ```
 
@@ -136,9 +141,9 @@ current_row = {
 {
   const row = current_row;
 
-  if (row) {
+  if (row && row.species_key) {
     const speciesLink = `<a href="https://www.gbif.org/species/${row.species_key}">${validated_species}</a>`;
-    const lmeName = row.lme_name;
+    const lmeName = row.lme_name || "";
     let htmlStr;
 
     if (row.plot_prefix === "appearing_species_plots_ggplot2") {
@@ -146,7 +151,7 @@ current_row = {
     } else if (row.plot_prefix === "reappearing_species_plots_ggplot2") {
       htmlStr = `The species ${speciesLink} in the <strong>${lmeName}</strong> is reappearing in <strong>${row.reappearance_year}</strong> after <strong>${row.years_without_occurrences}</strong> years.`;
     } else {
-      htmlStr = `The species ${speciesLink} in the <strong>${lmeName}</strong> has a total emerging score of <strong>${row.weighted_em_status}</strong>. Model used: <strong>${row.model}</strong>.`;
+      htmlStr = `The species ${speciesLink} in the <strong>${lmeName}</strong> has a total emerging score of <strong>${row.weighted_em_status}</strong>. Model used: <strong>${row.model || "unknown"}</strong>.`;
     }
 
     const p = document.createElement("p");
