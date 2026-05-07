@@ -118,11 +118,13 @@ reset_lme = {
 
 ```{ojs}
 //| echo: false
-// Get selected LME name for display
-selected_lme_name = {
+// Named reactive variable: the data row for the currently selected species + LME.
+// Using a named cell ensures OJS properly tracks the dependency on both
+// filtered_rows (which updates when the species changes) and selected_lme_id
+// (which updates on map click or species change via reset_lme).
+current_row = {
   if (selected_lme_id === null) return null;
-  const feat = lme_geojson.features.find(f => f.properties.lme_id === selected_lme_id);
-  return feat ? feat.properties.lme_name : null;
+  return filtered_rows.find(d => +d.lme_id === selected_lme_id) || null;
 }
 ```
 
@@ -132,10 +134,7 @@ selected_lme_name = {
 //| echo: false
 // Build and render a descriptive sentence for the validated species and selected LME
 {
-  // Find the row matching both species and currently selected LME
-  const row = selected_lme_id !== null
-    ? species_data.find(d => d.species_name === validated_species && +d.lme_id === selected_lme_id)
-    : null;
+  const row = current_row;
 
   if (row) {
     const speciesLink = `<a href="https://www.gbif.org/species/${row.species_key}">${validated_species}</a>`;
@@ -154,6 +153,8 @@ selected_lme_name = {
     p.style.cssText = "text-align:center;font-size:1rem;";
     p.innerHTML = htmlStr;
     yield p;
+  } else {
+    yield html``;
   }
 }
 ```
@@ -168,33 +169,29 @@ selected_lme_name = {
 //| echo: false
 // Show inline plots for the selected LME and species
 {
-  if (selected_lme_id !== null && filtered_lme_ids.includes(selected_lme_id)) {
-    const row = filtered_rows.find(d => +d.lme_id === selected_lme_id);
-    if (row && selected_lme_name) {
-      const container = document.createElement("div");
+  const row = current_row;
+  if (row) {
+    const container = document.createElement("div");
 
-      const title = document.createElement("h4");
-      title.textContent = `${validated_species} – ${selected_lme_name}`;
-      title.style.marginTop = "12px";
-      container.appendChild(title);
+    const title = document.createElement("h4");
+    title.textContent = `${validated_species} – ${row.lme_name}`;
+    title.style.marginTop = "12px";
+    container.appendChild(title);
 
-      const plotDiv1 = document.createElement("div");
-      plotDiv1.style.cssText = "width:100%;height:320px;";
-      container.appendChild(plotDiv1);
+    const plotDiv1 = document.createElement("div");
+    plotDiv1.style.cssText = "width:100%;height:320px;";
+    container.appendChild(plotDiv1);
 
-      const plotDiv2 = document.createElement("div");
-      plotDiv2.style.cssText = "width:100%;height:320px;margin-top:8px;";
-      container.appendChild(plotDiv2);
+    const plotDiv2 = document.createElement("div");
+    plotDiv2.style.cssText = "width:100%;height:320px;margin-top:8px;";
+    container.appendChild(plotDiv2);
 
-      renderPlotlyChart(plotDiv1, plotJsonUrl(selected_lme_name, row.species_key, 1, row.plot_prefix),
-        "No occurrences plot available.");
-      renderPlotlyChart(plotDiv2, plotJsonUrl(selected_lme_name, row.species_key, 2, row.plot_prefix),
-        "No grid-cells plot available.");
+    renderPlotlyChart(plotDiv1, plotJsonUrl(row.lme_name, row.species_key, 1, row.plot_prefix),
+      "No occurrences plot available.");
+    renderPlotlyChart(plotDiv2, plotJsonUrl(row.lme_name, row.species_key, 2, row.plot_prefix),
+      "No grid-cells plot available.");
 
-      yield container;
-    } else {
-      yield html`<p style="color:#999;padding:20px;text-align:center;">No plot data for this selection.</p>`;
-    }
+    yield container;
   } else if (filtered_lme_ids.length > 0) {
     yield html`<p style="color:#999;padding:20px;text-align:center;">Click on a highlighted region on the map to view plots.</p>`;
   } else {
