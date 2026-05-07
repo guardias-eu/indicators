@@ -34,21 +34,30 @@ species_data = [
     species_name: d.species_name,
     lme_id: d.lme_id,
     lme_name: d.lme_name,
-    plot_prefix: ""
+    plot_prefix: "",
+    first_year: null,
+    reappearance_year: null,
+    years_without_occurrences: null
   })),
   ...appearing_species_data.map(d => ({
     species_key: d.specieskey,
     species_name: d.species,
     lme_id: d.lme_id,
     lme_name: d.lme_name,
-    plot_prefix: "appearing_species_plots_ggplot2"
+    plot_prefix: "appearing_species_plots_ggplot2",
+    first_year: +d.first_year,
+    reappearance_year: null,
+    years_without_occurrences: null
   })),
   ...reappearing_species_data.map(d => ({
     species_key: d.specieskey,
     species_name: d.species,
     lme_id: d.lme_id,
     lme_name: d.lme_name,
-    plot_prefix: "reappearing_species_plots_ggplot2"
+    plot_prefix: "reappearing_species_plots_ggplot2",
+    first_year: null,
+    reappearance_year: +d.reappearance_year,
+    years_without_occurrences: +d.years_without_occurrences
   }))
 ]
 ```
@@ -110,6 +119,40 @@ selected_lme_name = {
   return feat ? feat.properties.lme_name : null;
 }
 ```
+
+::: {style="display:flex;justify-content:center;margin-bottom:1.5rem;"}
+
+```{ojs}
+//| echo: false
+// Build and render a descriptive sentence for the validated species
+{
+  const rows = species_data.filter(d => d.species_name === validated_species);
+  if (rows.length > 0) {
+    const firstRow = rows[0];
+    const speciesKey = firstRow.species_key;
+    let htmlStr;
+
+    if (firstRow.plot_prefix === "appearing_species_plots_ggplot2") {
+      // Use the earliest first_year across all LME rows for this species
+      const minYear = Math.min(...rows.map(d => d.first_year).filter(y => y !== null));
+      htmlStr = `The species (<code>speciesKey</code> <a href="https://www.gbif.org/species/${speciesKey}">${speciesKey}</a>) is appearing in <strong>${minYear}</strong>.`;
+    } else if (firstRow.plot_prefix === "reappearing_species_plots_ggplot2") {
+      const year = firstRow.reappearance_year;
+      const yearsAway = firstRow.years_without_occurrences;
+      htmlStr = `The species is reappearing in <strong>${year}</strong> after <strong>${yearsAway}</strong> years.`;
+    } else {
+      htmlStr = `The species has an emerging trend.`;
+    }
+
+    const p = document.createElement("p");
+    p.style.cssText = "text-align:center;font-size:1rem;";
+    p.innerHTML = htmlStr;
+    yield p;
+  }
+}
+```
+
+:::
 
 ::: {.grid}
 
