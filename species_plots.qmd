@@ -160,14 +160,8 @@ current_row = {
     } else if (row.plot_prefix === "reappearing_species_plots_ggplot2") {
       htmlStr = `The species ${speciesLink} in the <strong>${lmeName}</strong> is reappearing in <strong>${row.reappearance_year}</strong> after <strong>${row.years_without_occurrences}</strong> years.`;
     } else {
-      // Look up score and model directly from the raw CSV data to avoid
-      // any potential issues with the intermediate species_data mapping.
-      const rawRow = emerging_species_data.find(function(d) {
-        return (d["specieskey"] || d["species_key"]) === row.species_key
-            && d["lme_id"] === row.lme_id;
-      });
-      const score = rawRow ? rawRow["weighted_em_status"] : row.weighted_em_status;
-      const modelName = rawRow ? rawRow["model"] : row.model_used;
+      const score = row.weighted_em_status;
+      const modelName = row.model_used;
       htmlStr = `The species ${speciesLink} in the <strong>${lmeName}</strong> has a total emerging score of <strong>${score}</strong>. Model used: <strong>${modelName || "unknown"}</strong>.`;
     }
 
