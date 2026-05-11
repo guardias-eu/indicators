@@ -19,7 +19,7 @@ html`<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.c
 ```{ojs}
 //| echo: false
 // Load data files
-emerging_species_data = d3.csv("data/emerging_species_lme_combinations.csv")
+emerging_species_data = d3.csv("data/emerging_trends_ranking_list.csv")
 appearing_species_data = d3.csv("data/appearing_species.csv")
 reappearing_species_data = d3.csv("data/reappearing_species.csv")
 lme_geojson  = d3.json("data/lme_polygons.geojson")
@@ -27,29 +27,50 @@ lme_geojson  = d3.json("data/lme_polygons.geojson")
 
 ```{ojs}
 //| echo: false
-// Merge all species categories into a common schema used by this page
+// Merge all species categories into a common schema used by this page.
 species_data = [
-  ...emerging_species_data.map(d => ({
-    species_key: d.species_key,
-    species_name: d.species_name,
-    lme_id: d.lme_id,
-    lme_name: d.lme_name,
-    plot_prefix: ""
-  })),
-  ...appearing_species_data.map(d => ({
-    species_key: d.specieskey,
-    species_name: d.species,
-    lme_id: d.lme_id,
-    lme_name: d.lme_name,
-    plot_prefix: "appearing_species_plots_ggplot2"
-  })),
-  ...reappearing_species_data.map(d => ({
-    species_key: d.specieskey,
-    species_name: d.species,
-    lme_id: d.lme_id,
-    lme_name: d.lme_name,
-    plot_prefix: "reappearing_species_plots_ggplot2"
-  }))
+  ...emerging_species_data.map(function(d) {
+    return {
+      species_key: d["specieskey"] || d["species_key"] || "",
+      species_name: d["species_name"] || "",
+      lme_id: d["lme_id"] || "",
+      lme_name: d["lme_name"] || "",
+      plot_prefix: "",
+      first_year: null,
+      reappearance_year: null,
+      years_without_occurrences: null,
+      weighted_em_status: d["weighted_em_status"] || "",
+      model_used: d["model"] || ""
+    };
+  }),
+  ...appearing_species_data.map(function(d) {
+    return {
+      species_key: d["specieskey"] || d["species_key"] || "",
+      species_name: d["species"] || "",
+      lme_id: d["lme_id"] || "",
+      lme_name: d["lme_name"] || "",
+      plot_prefix: "appearing_species_plots_ggplot2",
+      first_year: +d["first_year"],
+      reappearance_year: null,
+      years_without_occurrences: null,
+      weighted_em_status: null,
+      model_used: null
+    };
+  }),
+  ...reappearing_species_data.map(function(d) {
+    return {
+      species_key: d["specieskey"] || d["species_key"] || "",
+      species_name: d["species"] || "",
+      lme_id: d["lme_id"] || "",
+      lme_name: d["lme_name"] || "",
+      plot_prefix: "reappearing_species_plots_ggplot2",
+      first_year: null,
+      reappearance_year: +d["reappearance_year"],
+      years_without_occurrences: +d["years_without_occurrences"],
+      weighted_em_status: null,
+      model_used: null
+    };
+  })
 ]
 ```
 
@@ -84,8 +105,13 @@ validated_species = unique_species.includes(selected_species)
 ```{ojs}
 //| echo: false
 // Rows for the validated species, one per LME
-filtered_rows      = species_data.filter(d => d.species_name === validated_species)
-filtered_lme_ids   = [...new Set(filtered_rows.map(d => +d.lme_id))]
+filtered_rows = species_data.filter(d => d.species_name === validated_species)
+```
+
+```{ojs}
+//| echo: false
+// LME IDs where the validated species is present
+filtered_lme_ids = [...new Set(filtered_rows.map(d => +d.lme_id))]
 ```
 
 ```{ojs}
@@ -103,13 +129,53 @@ reset_lme = {
 
 ```{ojs}
 //| echo: false
-// Get selected LME name for display
-selected_lme_name = {
-  if (selected_lme_id === null) return null;
-  const feat = lme_geojson.features.find(f => f.properties.lme_id === selected_lme_id);
-  return feat ? feat.properties.lme_name : null;
+// The data row for the currently selected species + LME.
+// Falls back to filtered_rows[0] so a row is always available if data exists.
+current_row = {
+  const rows = filtered_rows;
+  if (rows.length === 0) return null;
+  if (selected_lme_id !== null) {
+    const match = rows.find(d => +d.lme_id === selected_lme_id);
+    if (match) return match;
+  }
+  return rows[0];
 }
 ```
+
+::: {style="display:flex;justify-content:center;margin-bottom:1.5rem;"}
+
+```{ojs}
+//| echo: false
+// Build and render a descriptive sentence for the validated species and selected LME
+{
+  const row = current_row;
+
+  if (row && row.species_key) {
+    const speciesLink = `<a href="https://www.gbif.org/species/${row.species_key}">${validated_species}</a>`;
+    const lmeName = row.lme_name || "";
+    let htmlStr;
+
+    if (row.plot_prefix === "appearing_species_plots_ggplot2") {
+      htmlStr = `The species ${speciesLink} in the <strong>${lmeName}</strong> is appearing in <strong>${row.first_year}</strong>.`;
+    } else if (row.plot_prefix === "reappearing_species_plots_ggplot2") {
+      htmlStr = `The species ${speciesLink} in the <strong>${lmeName}</strong> is reappearing in <strong>${row.reappearance_year}</strong> after <strong>${row.years_without_occurrences}</strong> years.`;
+    } else {
+      const score = row.weighted_em_status;
+      const modelName = row.model_used;
+      htmlStr = `The species ${speciesLink} in the <strong>${lmeName}</strong> has a total emerging score of <strong>${score}</strong>. Model used: <strong>${modelName || "unknown"}</strong>.`;
+    }
+
+    const p = document.createElement("p");
+    p.style.cssText = "text-align:center;font-size:1rem;";
+    p.innerHTML = htmlStr;
+    yield p;
+  } else {
+    yield html``;
+  }
+}
+```
+
+:::
 
 ::: {.grid}
 
@@ -119,33 +185,29 @@ selected_lme_name = {
 //| echo: false
 // Show inline plots for the selected LME and species
 {
-  if (selected_lme_id !== null && filtered_lme_ids.includes(selected_lme_id)) {
-    const row = filtered_rows.find(d => +d.lme_id === selected_lme_id);
-    if (row && selected_lme_name) {
-      const container = document.createElement("div");
+  const row = current_row;
+  if (row) {
+    const container = document.createElement("div");
 
-      const title = document.createElement("h4");
-      title.textContent = `${validated_species} – ${selected_lme_name}`;
-      title.style.marginTop = "12px";
-      container.appendChild(title);
+    const title = document.createElement("h4");
+    title.textContent = `${validated_species} – ${row.lme_name}`;
+    title.style.marginTop = "12px";
+    container.appendChild(title);
 
-      const plotDiv1 = document.createElement("div");
-      plotDiv1.style.cssText = "width:100%;height:320px;";
-      container.appendChild(plotDiv1);
+    const plotDiv1 = document.createElement("div");
+    plotDiv1.style.cssText = "width:100%;height:320px;";
+    container.appendChild(plotDiv1);
 
-      const plotDiv2 = document.createElement("div");
-      plotDiv2.style.cssText = "width:100%;height:320px;margin-top:8px;";
-      container.appendChild(plotDiv2);
+    const plotDiv2 = document.createElement("div");
+    plotDiv2.style.cssText = "width:100%;height:320px;margin-top:8px;";
+    container.appendChild(plotDiv2);
 
-      renderPlotlyChart(plotDiv1, plotJsonUrl(selected_lme_name, row.species_key, 1, row.plot_prefix),
-        "No occurrences plot available.");
-      renderPlotlyChart(plotDiv2, plotJsonUrl(selected_lme_name, row.species_key, 2, row.plot_prefix),
-        "No grid-cells plot available.");
+    renderPlotlyChart(plotDiv1, plotJsonUrl(row.lme_name, row.species_key, 1, row.plot_prefix),
+      "No occurrences plot available.");
+    renderPlotlyChart(plotDiv2, plotJsonUrl(row.lme_name, row.species_key, 2, row.plot_prefix),
+      "No grid-cells plot available.");
 
-      yield container;
-    } else {
-      yield html`<p style="color:#999;padding:20px;text-align:center;">No plot data for this selection.</p>`;
-    }
+    yield container;
   } else if (filtered_lme_ids.length > 0) {
     yield html`<p style="color:#999;padding:20px;text-align:center;">Click on a highlighted region on the map to view plots.</p>`;
   } else {
