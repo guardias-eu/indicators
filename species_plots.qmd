@@ -19,7 +19,7 @@ html`<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.c
 ```{ojs}
 //| echo: false
 // Load data files
-emerging_species_data = d3.csv("data/emerging_trends_ranking_list.csv")
+emerging_species_data = d3.csv("data/emerging_trends_ranking_list.csv", d3.autoType)
 appearing_species_data = d3.csv("data/appearing_species.csv")
 reappearing_species_data = d3.csv("data/reappearing_species.csv")
 lme_geojson  = d3.json("data/lme_polygons.geojson")
@@ -30,16 +30,21 @@ lme_geojson  = d3.json("data/lme_polygons.geojson")
 // Merge all species categories into a common schema used by this page.
 species_data = [
   ...emerging_species_data.map(function(d) {
+    // d3.autoType converts numeric strings to numbers automatically.
+    // Access columns by their CSV header names; fall back across known aliases.
+    const emScore = d["weighted_em_status"] != null ? d["weighted_em_status"]
+                  : d["weigthed_em_status"] != null ? d["weigthed_em_status"]
+                  : null;
     return {
-      species_key: d["specieskey"] || d["species_key"] || "",
+      species_key: String(d["specieskey"] != null ? d["specieskey"] : d["species_key"] || ""),
       species_name: d["species_name"] || "",
-      lme_id: d["lme_id"] || "",
+      lme_id: String(d["lme_id"] || ""),
       lme_name: d["lme_name"] || "",
       plot_prefix: "",
       first_year: null,
       reappearance_year: null,
       years_without_occurrences: null,
-      weighted_em_status: d["weighted_em_status"] !== undefined ? +d["weighted_em_status"] : null,
+      weighted_em_status: emScore != null ? +emScore : null,
       model_used: d["model"] || ""
     };
   }),
@@ -160,9 +165,18 @@ current_row = {
     } else if (row.plot_prefix === "reappearing_species_plots_ggplot2") {
       htmlStr = `The species ${speciesLink} in the <strong>${lmeName}</strong> is reappearing in <strong>${row.reappearance_year}</strong> after <strong>${row.years_without_occurrences}</strong> years.`;
     } else {
-      const score = row.weighted_em_status;
-      const modelName = row.model_used;
-      htmlStr = `The species ${speciesLink} in the <strong>${lmeName}</strong> has a total emerging score of <strong>${score}</strong>. Model used: <strong>${modelName || "unknown"}</strong>.`;
+      // Look up values from both the mapped row and the raw CSV row as fallback
+      let score = row.weighted_em_status;
+      let modelName = row.model_used;
+      const rawRow = emerging_species_data.find(function(r) {
+        return String(r["specieskey"] || r["species_key"] || "") === String(row.species_key)
+            && String(r["lme_id"] || "") === String(row.lme_id);
+      });
+      if (rawRow) {
+        if (score == null) score = rawRow["weighted_em_status"] || rawRow["weigthed_em_status"];
+        if (!modelName) modelName = rawRow["model"];
+      }
+      htmlStr = `The species ${speciesLink} in the <strong>${lmeName}</strong> has a total emerging score of <strong>${score != null ? score : "N/A"}</strong>. Model used: <strong>${modelName || "unknown"}</strong>.`;
     }
 
     const p = document.createElement("p");
