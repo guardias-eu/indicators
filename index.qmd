@@ -249,6 +249,13 @@ selected_lme_id !== null ? html`<h3 style="margin-top: 0;">${selected_lme_name}<
 
 ```{ojs}
 //| echo: false
+selected_lme_id !== null && filtered_appearing.length > 0
+  ? html`<p><strong>${filtered_appearing.length}</strong> appearing species between 2022 and now.</p>`
+  : html``
+```
+
+```{ojs}
+//| echo: false
 // Display appearing species table
 {
   if (selected_lme_id !== null && filtered_appearing.length > 0) {
@@ -302,6 +309,12 @@ selected_lme_id !== null ? html`<h3 style="margin-top: 0;">${selected_lme_name}<
 
 ### Reappearing Species
 
+```{ojs}
+//| echo: false
+selected_lme_id !== null && filtered_reappearing.length > 0
+  ? html`<p><strong>${filtered_reappearing.length}</strong> reappearing species between 2022 and now.</p>`
+  : html``
+```
 
 ```{ojs}
 //| echo: false
@@ -358,6 +371,13 @@ selected_lme_id !== null ? html`<h3 style="margin-top: 0;">${selected_lme_name}<
 ::: {.g-col-12}
 
 ### Emerging Species
+
+```{ojs}
+//| echo: false
+selected_lme_id !== null && filtered_emerging.length > 0
+  ? html`<p><strong>${filtered_emerging.length}</strong> species with the highest total emerging score (31.5). Period: 2022-2024.</p>`
+  : html``
+```
 
 ```{ojs}
 //| echo: false
