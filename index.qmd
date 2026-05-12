@@ -375,7 +375,7 @@ selected_lme_id !== null && filtered_reappearing.length > 0
 ```{ojs}
 //| echo: false
 selected_lme_id !== null && filtered_emerging.length > 0
-  ? html`<p><strong>${filtered_emerging.length}</strong> species with the highest total emerging score (31.5). Period: 2022-2024.</p>`
+  ? html`<p><strong>${filtered_emerging.filter(d => +d.weighted_em_status === 31.5).length}</strong> species with the highest total emerging score (31.5). Period: 2022-2024.</p>`
   : html``
 ```
 
