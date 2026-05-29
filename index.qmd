@@ -241,6 +241,10 @@ selected_lme_name = selected_lme_id !== null
 selected_lme_id !== null ? html`<h3 style="margin-top: 0;">${selected_lme_name}</h3>` : html`<p style="text-align: center; color: #999; padding: 20px;">Click on a region to view species trends</p>`
 ```
 
+::: {.callout-warning}
+Marine occurrence data are substantially less well represented in open biodiversity databases than terrestrial data. This means that species listed as newly appearing or emerging may in reality could have been present and spreading for considerably longer, with earlier records remaining unpublished or scattered across grey literature and personal datasets. Because of these data limitations, the current results should be interpreted with caution.
+:::
+
 ::: {.grid}
 
 ::: {.g-col-12}
