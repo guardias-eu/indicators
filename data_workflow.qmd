@@ -32,4 +32,5 @@ Everything shown by this dashboard starts with the [GBIF species occurrence cube
 
 ## Workflow
 
-Stay tuned. More info coming soon...
+![Emerging trends workflow](images/assets/emerging trends workflow_white_text.png){fig-align="center"}
+
