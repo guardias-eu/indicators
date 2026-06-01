@@ -32,4 +32,6 @@ Everything shown by this dashboard starts with the [GBIF species occurrence cube
 
 ## Workflow
 
-Stay tuned. More info coming soon...
+![Emerging trends workflow](images/assets/emerging trends workflow_white_text.png){fig-align="center"}
+
+You can find more information about the entire workflow in the peer-reviewed GuardIAS report [Deliverable 2.5 - Workflow for detecting and prioritising emerging alien species based on GRIIS checklists and species occurrence cubes](https://doi.org/10.21436/inbor.149821148).
