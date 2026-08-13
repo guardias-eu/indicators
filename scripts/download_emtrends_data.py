@@ -1,7 +1,7 @@
 """Download data files from the guardias-eu/emtrends repository.
 
 Downloads:
-* ZIP files containing ggplot2 objects from indicators_plots/ directory
+* ZIP files containing ggplot2 objects from indicators_plots/ggplot/ directory
   (indicator plots, appearing species plots, reappearing species plots)
 * species CSV files (emerging, appearing, reappearing)
 
@@ -35,7 +35,7 @@ EMTRENDS_BASE_URL = "https://raw.githubusercontent.com/guardias-eu/emtrends/main
 SPECIES_CSV_URL = f"{EMTRENDS_BASE_URL}/data/output/emerging_trends_ranking_list.csv"
 APPEARING_SPECIES_CSV_URL = f"{EMTRENDS_BASE_URL}/data/output/appearing_species.csv"
 REAPPEARING_SPECIES_CSV_URL = f"{EMTRENDS_BASE_URL}/data/output/reappearing_species.csv"
-PLOTS_BASE_URL = f"{EMTRENDS_BASE_URL}/data/output/indicators_plots"
+PLOTS_BASE_URL = f"{EMTRENDS_BASE_URL}/data/output/indicators_plots/ggplot"
 
 # ---------------------------------------------------------------------------
 # Output paths (relative to repo root)

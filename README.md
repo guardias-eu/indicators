@@ -20,14 +20,14 @@ species across the European Large Marine Ecosystem (LME) regions.
 | `data/emerging_trends_ranking_list.csv` | [`emerging_trends_ranking_list.csv`](https://github.com/guardias-eu/emtrends/blob/main/data/output/emerging_trends_ranking_list.csv) (guardias-eu/emtrends) | Weekly (via GitHub Actions) |
 | `data/appearing_species.csv` | [`appearing_species.csv`](https://github.com/guardias-eu/emtrends/blob/main/data/output/appearing_species.csv) (guardias-eu/emtrends) | Weekly (via GitHub Actions) |
 | `data/reappearing_species.csv` | [`reappearing_species.csv`](https://github.com/guardias-eu/emtrends/blob/main/data/output/reappearing_species.csv) (guardias-eu/emtrends) | Weekly (via GitHub Actions) |
-| `data/indicators_plots_rdata/` | RData files extracted from ZIP archives in [`indicators_plots/`](https://github.com/guardias-eu/emtrends/tree/main/data/output/indicators_plots) (guardias-eu/emtrends) | Weekly (via GitHub Actions) |
+| `data/indicators_plots_rdata/` | RData files extracted from ZIP archives in [`indicators_plots/ggplot/`](https://github.com/guardias-eu/emtrends/tree/main/data/output/indicators_plots/ggplot) (guardias-eu/emtrends) | Weekly (via GitHub Actions) |
 | `data/indicators_plots_json/` | Plotly JSON files converted from ggplot2 objects in RData files | Weekly (via GitHub Actions) |
 
 ### Data flow
 
 The indicator plots follow this processing pipeline:
 
-1. **Source**: ggplot2 objects stored in RData files within ZIP archives in the [emtrends repository](https://github.com/guardias-eu/emtrends/tree/main/data/output/indicators_plots)
+1. **Source**: ggplot2 objects stored in RData files within ZIP archives in the [emtrends repository](https://github.com/guardias-eu/emtrends/tree/main/data/output/indicators_plots/ggplot)
 2. **Download**: Python script downloads ZIP files and extracts `.RData` files (ZIP files are split into chunks per LME)
 3. **Convert**: R script loads `.RData` files, converts ggplot2 objects to Plotly, and exports as JSON
 4. **Display**: Observable JavaScript loads JSON files and renders interactive charts in Leaflet popups
