@@ -151,7 +151,7 @@ current_row = {
   const row = current_row;
 
   if (row && row.species_key) {
-    const speciesLink = `<a href="https://www.gbif.org/species/${row.species_key}">${validated_species}</a>`;
+    const speciesLink = `<a href="https://www.gbif.org/taxon/${row.species_key}">${validated_species}</a>`;
     const lmeName = row.lme_name || "";
     let htmlStr;
 
