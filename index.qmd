@@ -276,7 +276,7 @@ selected_lme_id !== null && filtered_appearing.length > 0
         first_year: 150
       },
       format: {
-        specieskey: x => htl.html`<a href="https://www.gbif.org/species/${x}" target="_blank">${x}</a>`,
+        specieskey: x => htl.html`<a href="https://www.gbif.org/taxon/${x}" target="_blank">${x}</a>`,
         species: (value, idx) => {
           const row = filtered_appearing[idx];
           const link = document.createElement("a");
@@ -340,7 +340,7 @@ selected_lme_id !== null && filtered_reappearing.length > 0
         years_without_occurrences: 200
       },
       format: {
-        specieskey: x => htl.html`<a href="https://www.gbif.org/species/${x}" target="_blank">${x}</a>`,
+        specieskey: x => htl.html`<a href="https://www.gbif.org/taxon/${x}" target="_blank">${x}</a>`,
         species: (value, idx) => {
           const row = filtered_reappearing[idx];
           const link = document.createElement("a");
@@ -405,7 +405,7 @@ selected_lme_id !== null && filtered_emerging.length > 0
         growth: 120
       },
       format: {
-        specieskey: x => htl.html`<a href="https://www.gbif.org/species/${x}" target="_blank">${x}</a>`,
+        specieskey: x => htl.html`<a href="https://www.gbif.org/taxon/${x}" target="_blank">${x}</a>`,
         species_name: (value, idx) => {
           const row = filtered_emerging[idx];
           const link = document.createElement("a");
