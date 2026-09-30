@@ -387,4 +387,4 @@ highlight_selected = {
 
 :::
 
-<span style="font-size:0.8em;color:#999;">**Funding:** This dashboard is being developed in the framework of the GuardIAS project. GuardIAS receives funding from the European Union's Horizon Europe Research and Innovation Programme (ID No 101181413).</span>
+{{< include _includes/funding-disclaimer.html >}}
