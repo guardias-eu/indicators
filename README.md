@@ -1,5 +1,11 @@
 # GUARDIAS Emerging Trends Dashboard
 
+<!-- badges: start -->
+[![repo
+status](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![funder](https://badgen.net/static/funder/European%20Union/f2a)](https://doi.org/10.3030/101181413)
+<!-- badges: end -->
+
 Interactive Quarto dashboard for exploring emerging trends for marine
 species across the European Large Marine Ecosystem (LME) regions.
 
@@ -100,4 +106,4 @@ The rendered site is written to `docs/` and can be served by any static host
 (e.g. GitHub Pages).
 
 ## Funding
-This package is being developed in the framework of the GuardIAS project. GuardIAS receives funding from the European Union's Horizon Europe Research and Innovation Programme (ID No 101181413). Funded by the European Union. Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Research Executive Agency (REA). Neither the European Union nor the granting authority can be held responsible for them.
+This package is being developed in the framework of the [GuardIAS](https://guardias.eu/) project. GuardIAS receives funding from the European Union's Horizon Europe Research and Innovation Programme (ID No 101181413). Funded by the European Union. Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Research Executive Agency (REA). Neither the European Union nor the granting authority can be held responsible for them.
